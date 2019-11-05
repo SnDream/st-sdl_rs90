@@ -1,0 +1,6 @@
+*.o
+*.opk
+*.so
+/config.h
+/sdl_test
+/st
