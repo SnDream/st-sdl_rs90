@@ -2349,8 +2349,10 @@ sdlinit(void) {
     //xw.w = initial_width;
     //xw.h = initial_height;
 
-#ifdef RS97_SCREEN_480
+#if defined(RS97_SCREEN_480)
 	if(!(screen = SDL_SetVideoMode(320, 480, 16, SDL_SWSURFACE | SDL_DOUBLEBUF))) {
+#elif defined(RS90)
+	if(!(screen = SDL_SetVideoMode(240, 160, 16, SDL_SWSURFACE | SDL_DOUBLEBUF))) {
 #else
 	if(!(screen = SDL_SetVideoMode(320, 240, 16, SDL_HWSURFACE | SDL_DOUBLEBUF))) {
 #endif

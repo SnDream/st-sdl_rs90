@@ -1,12 +1,18 @@
 # st - simple terminal
 # See LICENSE file for copyright and license details.
 
+ifeq (${MAKECMDGOALS},rs90)
+include config_rs90.mk
+else
 include config_rs97.mk
+endif
 
 SRC = st.c keyboard.c font.c msg_queue.c
 OBJ = ${SRC:.c=.o}
 
 all: options st libst-preload.so sdl_test
+
+rs90: all
 
 libst-preload.so: st-preload.o msg_queue.o
 	${CC} -shared -o $@ $^

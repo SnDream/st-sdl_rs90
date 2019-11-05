@@ -9,8 +9,13 @@
 static char font[] = "fonts/FIXED_V0.TTF:fonts/FIXED_V0.TTF";
 static int fontsize = 8;
 static int borderpx = 2;
+#ifdef RS90
+static int initial_width = 240;
+static int initial_height = 160;
+#else
 static int initial_width = 320;
 static int initial_height = 240;
+#endif
 static char shell[] = "/bin/sh";
 
 /* double-click timeout (in milliseconds) between clicks for selection */

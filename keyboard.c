@@ -4,6 +4,23 @@
 #define NUM_ROWS 6
 #define NUM_KEYS 18
 
+#ifdef RS90
+
+#define KEY_UP SDLK_UP
+#define KEY_DOWN SDLK_DOWN
+#define KEY_LEFT SDLK_LEFT
+#define KEY_RIGHT SDLK_RIGHT
+#define KEY_ENTER SDLK_LCTRL // A
+#define KEY_TOGGLE SDLK_LALT // B
+#define KEY_BACKSPACE SDLK_BACKSPACE // R
+#define KEY_SHIFT SDLK_TAB // L
+#define KEY_LOCATION SDLK_LSHIFT // Y (Unused)
+#define KEY_ACTIVATE SDLK_ESCAPE // SELECT
+#define KEY_QUIT SDLK_SPACE // X (Unused)
+#define KEY_HELP SDLK_RETURN // START
+
+#else
+
 //#ifdef RS97
 
 #define KEY_UP SDLK_UP
@@ -34,6 +51,8 @@
 
 #endif*/
 
+#endif
+
 #define KMOD_SYNTHETIC (1 << 13)
 
 static int row_length[NUM_ROWS] = {13, 17, 17, 15, 14, 8};
@@ -57,6 +76,23 @@ static SDLKey keys[2][NUM_ROWS][NUM_KEYS] = {
 };
 
 static char* syms[2][NUM_ROWS][NUM_KEYS] = {
+#ifdef RS90
+	{
+		{"esc",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
+		{"`",     "1",   "2",   "3",     "4",   "5",   "6",    "7",  "8",  "9",  "0",   "-",   "=",     "<BS", "ins",  "del", "^", NULL},
+		{"tab",   "q",   "w",   "e",     "r",   "t",   "y",    "u",  "i",  "o",  "p",   "[",   "]",     "\\",   "hom", "end", "\xde", NULL},
+		{"caps",  "a",   "s",   "d",     "f",   "g",   "h",    "j",  "k",  "l",  ";",   "'",   "enter", "pgUp", "<", NULL},
+		{"shift", "z",   "x",   "c",     "v",   "b",   "n",    "m",  ",",  ".",  "/",   " shift", "pgDn", ">", NULL},
+		{"ctrl",  "win", "alt", "  space ", "alt", "win", "menu", "ctrl", NULL}
+	}, {
+		{"esc",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
+		{"~",     "!",   "@",   "#",     "$",   "%",   "^",    "&",  "*",  "(",  ")",   "_",   "+",     "<BS", "ins",  "del", "^", NULL},
+		{"tab",   "Q",   "W",   "E",     "R",   "T",   "Y",    "U",  "I",  "O",  "P",   "{",   "}",     "|",   "hom", "end", "\xde", NULL},
+		{"caps",  "A",   "S",   "D",     "F",   "G",   "H",    "J",  "K",  "L",  ":",   "\"",   "enter", "pgUp", "<", NULL},
+		{"shift", "Z",   "X",   "C",     "V",   "B",   "N",    "M",  "<",  ">",  "?",   " shift", "pgDn", ">", NULL},
+		{"ctrl",  "win", "alt", "  space ", "alt", "win", "menu", "ctrl", NULL}
+	}
+#else
 	{
 		{"esc",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "F10", "F11", "F12", NULL},
 		{"`",     "1",   "2",   "3",     "4",   "5",   "6",    "7",  "8",  "9",  "0",   "-",   "=",     "bksp", "ins",  "del", " ^ ", NULL},
@@ -72,6 +108,7 @@ static char* syms[2][NUM_ROWS][NUM_KEYS] = {
 		{"shift", "Z",   "X",   "C",     "V",   "B",   "N",    "M",  "<",  ">",  "?",   " shift", "pg dn", " > ", NULL},
 		{"ctrl",  "win", "alt", "   space   ", "alt", "win", "menu", "ctrl", NULL}
 	}
+#endif
 };
 
 static unsigned char toggled[NUM_ROWS][NUM_KEYS];
@@ -94,6 +131,19 @@ void init_keyboard() {
 }
 
 char* help = 
+#ifdef RS90
+"How to use:\n"
+"  ARROWS: select key from keyboard\n"
+"  A: press key\n"
+"  B: toggle key\n"
+"     (useful for shift/ctrl...)\n"
+"  L: shift\n"
+"  R: backspace\n"
+"  SELECT: quit (on this screen),\n"
+"          change keyboard location\n"
+"          (top/bottom/hidden)\n"
+"  START: show this help\n"
+#else
 "How to use:\n"
 "  ARROWS: select key from keyboard\n"
 "  A: press key\n"
@@ -119,6 +169,7 @@ char* help =
 "  opkg install <f.ipk>  install package\n"
 "  opkg remove <f>       remove package\n"
 "  grep <pattern> <f>    find in files\n"
+#endif
 ;
 
 void draw_keyboard(SDL_Surface* surface) {
@@ -130,7 +181,7 @@ void draw_keyboard(SDL_Surface* surface) {
 	unsigned short toggled_color = SDL_MapRGB(surface->format, 192, 192, 0);
 	if(show_help) {
 		SDL_FillRect(surface, NULL, bg_color);
-		draw_string(surface, "SDL Terminal by Benob, based on st-sdl", 42, 10, sel_toggled_color);
+		draw_string(surface, "SDL Terminal by Benob, based on st-sdl", 8, 10, sel_toggled_color);
 		draw_string(surface, help, 8, 28, sel_color);
 		return;
 	}
@@ -139,11 +190,19 @@ void draw_keyboard(SDL_Surface* surface) {
 	for(int i = 0; i < NUM_KEYS && syms[0][0][i]; i++) {
 		total_length += (1 + strlen(syms[0][0][i])) * 6;
 	}
+#ifdef RS90
+	int center_x = (surface->w - total_length) / 2 + 2;
+#else
 	int center_x = (surface->w - total_length) / 2;
+#endif
 	int x = center_x, y = surface->h - 8 * (NUM_ROWS) - 16;
 	if(location == 1) y = 16;
 
+#ifdef RS90
+	SDL_Rect rect = {x - 2, y - 3, total_length, NUM_ROWS * 8 + 3};
+#else
 	SDL_Rect rect = {x - 4, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
+#endif
 	SDL_FillRect(surface, &rect, bg_color);
 
 	for(int j = 0; j < NUM_ROWS; j++) {
@@ -251,7 +310,21 @@ int compute_new_col(int visual_offset, int old_row, int new_row) {
 int handle_keyboard_event(SDL_Event* event) {
 	static int visual_offset = 0;
 	if(event->key.type == SDL_KEYDOWN && !(event->key.keysym.mod & KMOD_SYNTHETIC) && event->key.keysym.sym == KEY_ACTIVATE) {
+#ifdef RS90
+		if(show_help) {
+			exit(0);
+		}
+		if(!active) {
+			active = 1;
+			location = 0;
+		} else if(!location) {
+			location = 1;
+		} else {
+			active = 0;
+		}
+#else
 		active = ! active;
+#endif
 		return 1;
 	}
 	if(!active) return 0;
@@ -318,8 +391,13 @@ int handle_keyboard_event(SDL_Event* event) {
 
 int main() {
 	SDL_Init( SDL_INIT_EVERYTHING );
+#ifdef RS90
+	SDL_Surface* screen = SDL_SetVideoMode(240 * 4, 160 * 4, 16, SDL_SWSURFACE );
+	SDL_Surface* buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 240, 160, 16, screen->format->Rmask, screen->format->Gmask, screen->format->Bmask, screen->format->Amask);
+#else
 	SDL_Surface* screen = SDL_SetVideoMode(320 * 4, 240 * 4, 16, SDL_SWSURFACE );
 	SDL_Surface* buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 240, 16, screen->format->Rmask, screen->format->Gmask, screen->format->Bmask, screen->format->Amask);
+#endif
 	while(1) {
 		SDL_Event event;
 		while( SDL_PollEvent( &event ) ) {
