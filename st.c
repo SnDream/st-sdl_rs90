@@ -2352,7 +2352,7 @@ sdlinit(void) {
 #if defined(RS97_SCREEN_480)
 	if(!(screen = SDL_SetVideoMode(320, 480, 16, SDL_SWSURFACE | SDL_DOUBLEBUF))) {
 #elif defined(RS90)
-	if(!(screen = SDL_SetVideoMode(240, 160, 16, SDL_SWSURFACE | SDL_DOUBLEBUF))) {
+	if(!(screen = SDL_SetVideoMode(240, 160, 16, SDL_HWSURFACE | SDL_DOUBLEBUF))) {
 #else
 	if(!(screen = SDL_SetVideoMode(320, 240, 16, SDL_HWSURFACE | SDL_DOUBLEBUF))) {
 #endif
@@ -2741,6 +2741,8 @@ cresize(int width, int height)
     printf("set videomode %dx%d\n", xw.w, xw.h);
 #ifdef RS97_SCREEN_480
 	if(!(screen = SDL_SetVideoMode(320, 480, 16, SDL_SWSURFACE | SDL_DOUBLEBUF))) {
+#elif defined(RS90)
+	if(!(screen = SDL_SetVideoMode(240, 160, 16, SDL_HWSURFACE | SDL_DOUBLEBUF))) {
 #else
 	if(!(screen = SDL_SetVideoMode(320, 240, 16, SDL_HWSURFACE | SDL_DOUBLEBUF))) {
 #endif
