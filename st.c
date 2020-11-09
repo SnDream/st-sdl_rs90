@@ -452,11 +452,8 @@ xflip(void) {
 		draw_keyboard(screen);
 #endif
 
-	if(SDL_Flip(screen)) {
-	//if(SDL_Flip(xw.win)) {
-		fputs("FLIP ERROR\n", stderr);
-		exit(EXIT_FAILURE);
-	}
+	SDL_Flip(screen);
+
 #ifdef RS97_SCREEN_480
     SDL_FreeSurface(buffer);
 #endif
