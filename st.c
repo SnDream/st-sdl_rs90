@@ -2256,8 +2256,8 @@ sdlloadfonts(char *fontstr, int fontsize) {
 	dc.font = TTF_OpenFont(fontstr, fontsize);
     fprintf(stderr, "%s\n", fontstr);*/
 	//TTF_SizeUTF8(dc.font, "O", &xw.cw, &xw.ch);
-    xw.cw = 6;
-    xw.ch = 8;
+    xw.cw = 4;
+    xw.ch = 6;
 
 	/*if(dc.ifont) TTF_CloseFont(dc.ifont);
 	dc.ifont = TTF_OpenFont(fontstr, fontsize);
@@ -2934,7 +2934,7 @@ main(int argc, char *argv[]) {
 
 run:
     setlocale(LC_CTYPE, "");
-    tnew((initial_width - 2) / 6, (initial_height - 2) / 8);
+    tnew((initial_width - 2) / 4, (initial_height - 2) / 6);
     ttynew();
     sdlinit(); /* Must have TTY before cresize */
     init_keyboard();

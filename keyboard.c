@@ -118,7 +118,7 @@ static int shifted = 0;
 static int location = 0;
 static int active = 1;
 static int mod_state = 0;
-static int show_help = 1;
+static int show_help = 0;
 
 void init_keyboard() {
 	for(int j = 0; j < NUM_ROWS; j++)
@@ -188,18 +188,20 @@ void draw_keyboard(SDL_Surface* surface) {
 	if(!active) return;
 	int total_length = -1;
 	for(int i = 0; i < NUM_KEYS && syms[0][0][i]; i++) {
-		total_length += (1 + strlen(syms[0][0][i])) * 6;
+		total_length += (1 + strlen(syms[0][0][i])) * 4;
 	}
 #ifdef RS90
-	int center_x = (surface->w - total_length) / 2 + 2;
+	int center_x = (surface->w - total_length) - 2;
+	int x = center_x, y = surface->h - 8 * (NUM_ROWS) - 2;
+	if(location == 1) y = 2;
 #else
 	int center_x = (surface->w - total_length) / 2;
-#endif
 	int x = center_x, y = surface->h - 8 * (NUM_ROWS) - 16;
 	if(location == 1) y = 16;
+#endif
 
 #ifdef RS90
-	SDL_Rect rect = {x - 2, y - 3, total_length, NUM_ROWS * 8 + 3};
+	SDL_Rect rect = {x - 2, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
 #else
 	SDL_Rect rect = {x - 4, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
 #endif
@@ -209,7 +211,7 @@ void draw_keyboard(SDL_Surface* surface) {
 		x = center_x;
 		for(int i = 0; i < row_length[j]; i++) {
 			int length = strlen(syms[shifted][j][i]);
-			SDL_Rect r2 = {x - 2, y - 1, length * 6 + 4, 7};
+			SDL_Rect r2 = {x - 1, y - 1, length * 4 + 3, 7};
 			if(toggled[j][i]) {
 				if(selected_i == i && selected_j == j) {
 					SDL_FillRect(surface, &r2, sel_toggled_color);
@@ -222,7 +224,7 @@ void draw_keyboard(SDL_Surface* surface) {
 				SDL_FillRect(surface, &r2, key_color);
 			}
 			draw_string(surface, syms[shifted][j][i], x, y, text_color);
-			x += 6 * (length + 1);
+			x += 4 * (length + 1);
 		}
 		y += 8;
 	}
