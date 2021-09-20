@@ -78,19 +78,19 @@ static SDLKey keys[2][NUM_ROWS][NUM_KEYS] = {
 static char* syms[2][NUM_ROWS][NUM_KEYS] = {
 #ifdef RS90
 	{
-		{"esc",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
-		{"`",     "1",   "2",   "3",     "4",   "5",   "6",    "7",  "8",  "9",  "0",   "-",   "=",     "<BS", "ins",  "del", "^", NULL},
-		{"tab",   "q",   "w",   "e",     "r",   "t",   "y",    "u",  "i",  "o",  "p",   "[",   "]",     "\\",   "hom", "end", "\xde", NULL},
-		{"caps",  "a",   "s",   "d",     "f",   "g",   "h",    "j",  "k",  "l",  ";",   "'",   "enter", "pgUp", "<", NULL},
-		{"shift", "z",   "x",   "c",     "v",   "b",   "n",    "m",  ",",  ".",  "/",   " shift", "pgDn", ">", NULL},
-		{"ctrl",  "win", "alt", "  space ", "alt", "win", "menu", "ctrl", NULL}
+		{"ESC",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
+		{"`",     "1",   "2",   "3",     "4",   "5",   "6",    "7",  "8",  "9",  "0",   "-",   "=",     "<BS", "INS", "DEL", "\x10", NULL},
+		{"TAB",   "q",   "w",   "e",     "r",   "t",   "y",    "u",  "i",  "o",  "p",   "[",   "]",     "\\",  "HOM", "END", "\x11", NULL},
+		{"CAPS",  "a",   "s",   "d",     "f",   "g",   "h",    "j",  "k",  "l",  ";",   "'",   "ENTER", "PGUP", "<", NULL},
+		{"SHIFT", "z",   "x",   "c",     "v",   "b",   "n",    "m",  ",",  ".",  "/",   "SHIFT ", "PGDN", ">", NULL},
+		{"CTRL",  "WIN", "ALT", "        ", "ALT", "WIN", "MENU", "CTRL", NULL}
 	}, {
-		{"esc",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
-		{"~",     "!",   "@",   "#",     "$",   "%",   "^",    "&",  "*",  "(",  ")",   "_",   "+",     "<BS", "ins",  "del", "^", NULL},
-		{"tab",   "Q",   "W",   "E",     "R",   "T",   "Y",    "U",  "I",  "O",  "P",   "{",   "}",     "|",   "hom", "end", "\xde", NULL},
-		{"caps",  "A",   "S",   "D",     "F",   "G",   "H",    "J",  "K",  "L",  ":",   "\"",   "enter", "pgUp", "<", NULL},
-		{"shift", "Z",   "X",   "C",     "V",   "B",   "N",    "M",  "<",  ">",  "?",   " shift", "pgDn", ">", NULL},
-		{"ctrl",  "win", "alt", "  space ", "alt", "win", "menu", "ctrl", NULL}
+		{"ESC",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
+		{"~",     "!",   "@",   "#",     "$",   "%",   "^",    "&",  "*",  "(",  ")",   "_",   "+",     "<BS", "INS", "DEL", "\x10", NULL},
+		{"TAB",   "Q",   "W",   "E",     "R",   "T",   "Y",    "U",  "I",  "O",  "P",   "{",   "}",     "|",   "HOM", "END", "\x11", NULL},
+		{"CAPS",  "A",   "S",   "D",     "F",   "G",   "H",    "J",  "K",  "L",  ":",   "\"",   "ENTER", "PGUP", "<", NULL},
+		{"SHIFT", "Z",   "X",   "C",     "V",   "B",   "N",    "M",  "<",  ">",  "?",   "SHIFT ", "PGDN", ">", NULL},
+		{"CTRL",  "WIN", "ALT", "        ", "ALT", "WIN", "MENU", "CTRL", NULL}
 	}
 #else
 	{
@@ -223,7 +223,7 @@ void draw_keyboard(SDL_Surface* surface) {
 			} else {
 				SDL_FillRect(surface, &r2, key_color);
 			}
-			draw_string(surface, syms[shifted][j][i], x, y, text_color);
+			draw_kb_string(surface, syms[shifted][j][i], x, y, text_color);
 			x += 4 * (length + 1);
 		}
 		y += 8;

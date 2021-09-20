@@ -7,7 +7,7 @@ else
 include config_rs97.mk
 endif
 
-SRC = st.c keyboard.c font.c msg_queue.c
+SRC = st.c keyboard.c font.c msg_queue.c utf8_utils.c
 OBJ = ${SRC:.c=.o}
 
 all: options st libst-preload.so sdl_test
@@ -40,7 +40,7 @@ st: ${OBJ}
 
 clean:
 	@echo cleaning
-	@rm -f st ${OBJ} st-${VERSION}.tar.gz
+	@rm -f st ${OBJ} st-${VERSION}.tar.gz st-preload.o msg_queue.o libst-preload.so sdl_test.o
 
 dist: clean
 	@echo creating dist tarball
