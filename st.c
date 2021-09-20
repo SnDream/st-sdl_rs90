@@ -30,6 +30,7 @@
 #include "keyboard.h"
 #include "msg_queue.h"
 #include "utf8_utils.h"
+#include "terminfo.h"
 
 #define Glyph Glyph_
 #define Font Font_
@@ -2808,12 +2809,14 @@ main(int argc, char *argv[]) {
 
 run:
     setlocale(LC_CTYPE, "");
+	terminfo_set();
     tnew((initial_width - 2) / 4, (initial_height - 2) / 6);
     ttynew();
     sdlinit(); /* Must have TTY before cresize */
     init_keyboard();
     selinit();
     run();
+	terminfo_remove();
     return 0;
 }
 

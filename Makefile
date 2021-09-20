@@ -7,7 +7,7 @@ else
 include config_rs97.mk
 endif
 
-SRC = st.c keyboard.c font.c msg_queue.c utf8_utils.c
+SRC = st.c keyboard.c font.c msg_queue.c utf8_utils.c terminfo.c
 OBJ = ${SRC:.c=.o}
 
 all: options st libst-preload.so sdl_test
