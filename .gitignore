@@ -4,3 +4,5 @@
 /config.h
 /sdl_test
 /st
+/terminfo_dir
+/terminfo_data.c

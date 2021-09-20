@@ -14,6 +14,18 @@ all: options st libst-preload.so sdl_test
 
 rs90: all
 
+terminfo_dir/s/st-256color.gz: st-256color.terminfo
+	@mkdir -p terminfo_dir
+	@tic -o terminfo_dir $<
+	@gzip -9 ${@:.gz=}
+
+terminfo_data.c: terminfo_dir/s/st-256color.gz
+	@echo -n 'unsigned char terminfo_data[] = {' > $@
+	@hexdump -ve '1/1 "0x%02x, "' $<            >> $@
+	@echo '};'                                  >> $@
+
+terminfo.c: terminfo_data.c
+
 libst-preload.so: st-preload.o msg_queue.o
 	${CC} -shared -o $@ $^
 
@@ -41,6 +53,7 @@ st: ${OBJ}
 clean:
 	@echo cleaning
 	@rm -f st ${OBJ} st-${VERSION}.tar.gz st-preload.o msg_queue.o libst-preload.so sdl_test.o
+	@rm -rf terminfo_dir
 
 dist: clean
 	@echo creating dist tarball
