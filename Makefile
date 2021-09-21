@@ -1,30 +1,22 @@
 # st - simple terminal
 # See LICENSE file for copyright and license details.
 
-ifeq (${MAKECMDGOALS},rs90)
+ifneq (${MAKECMDGOALS},rs97)
 include config_rs90.mk
 else
 include config_rs97.mk
 endif
 
-SRC = st.c keyboard.c font.c msg_queue.c utf8_utils.c terminfo.c
+SRC = st.c keyboard.c font.c msg_queue.c utf8_utils.c
 OBJ = ${SRC:.c=.o}
 
-all: options st libst-preload.so sdl_test
+all: options st libst-preload.so sdl_test terminfo_dir
 
 rs90: all
 
-terminfo_dir/s/st-256color.gz: st-256color.terminfo
-	@mkdir -p terminfo_dir
-	@tic -o terminfo_dir $<
-	@gzip -9 ${@:.gz=}
-
-terminfo_data.c: terminfo_dir/s/st-256color.gz
-	@echo -n 'unsigned char terminfo_data[] = {' > $@
-	@hexdump -ve '1/1 "0x%02x, "' $<            >> $@
-	@echo '};'                                  >> $@
-
-terminfo.c: terminfo_data.c
+terminfo_dir: st-256color.terminfo
+	@rm -rf $@
+	@tic -o $@ $<
 
 libst-preload.so: st-preload.o msg_queue.o
 	${CC} -shared -o $@ $^

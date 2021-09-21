@@ -3,6 +3,8 @@
 mkdir -p opk
 cp ./st opk/st.dge
 cp ./st.png opk/st.png
+cp -r ./terminfo_dir opk/terminfo
+cp libst-preload.so opk/libst-preload.so
 
 echo '[Desktop Entry]
 Type=Application

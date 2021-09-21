@@ -30,7 +30,6 @@
 #include "keyboard.h"
 #include "msg_queue.h"
 #include "utf8_utils.h"
-#include "terminfo.h"
 
 #define Glyph Glyph_
 #define Font Font_
@@ -835,6 +834,7 @@ execsh(void) {
 	signal(SIGALRM, SIG_DFL);
 
 	DEFAULT(envshell, shell);
+	setenv("TERMINFO", "/opk/terminfo", 1);
 	setenv("TERM", termname, 1);
 	args = opt_cmd ? opt_cmd : (char *[]){envshell, "-i", NULL};
 	execvp(args[0], args);
@@ -2809,14 +2809,12 @@ main(int argc, char *argv[]) {
 
 run:
     setlocale(LC_CTYPE, "");
-	terminfo_set();
     tnew((initial_width - 2) / 4, (initial_height - 2) / 6);
     ttynew();
     sdlinit(); /* Must have TTY before cresize */
     init_keyboard();
     selinit();
     run();
-	terminfo_remove();
     return 0;
 }
 
