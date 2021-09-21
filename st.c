@@ -604,6 +604,7 @@ selcopy(void) {
 	xsetsel(str);
 }
 
+__attribute__((unused))
 void
 selnotify(SDL_Event *e) {
 (void)e;
@@ -639,6 +640,7 @@ selpaste(void) {
 #endif
 }
 
+__attribute__((unused))
 void selclear(SDL_Event *e) {
 	(void)e;
 	if(sel.bx == -1)
@@ -647,6 +649,7 @@ void selclear(SDL_Event *e) {
 	tsetdirt(sel.b.y, sel.e.y);
 }
 
+__attribute__((unused))
 void
 selrequest(SDL_Event *e) {
 (void)e;
