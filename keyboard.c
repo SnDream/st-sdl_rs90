@@ -1,4 +1,5 @@
 #include <SDL/SDL.h>
+#include <SDL/SDL_timer.h>
 #include "font.h"
 
 #define NUM_ROWS 6
@@ -52,8 +53,6 @@
 #endif*/
 
 #endif
-
-#define KMOD_SYNTHETIC (1 << 13)
 
 static int row_length[NUM_ROWS] = {13, 17, 17, 15, 14, 8};
 
@@ -113,64 +112,79 @@ static char* syms[2][NUM_ROWS][NUM_KEYS] = {
 
 static unsigned char toggled[NUM_ROWS][NUM_KEYS];
 
+static unsigned int key_center[NUM_ROWS][NUM_KEYS];
+static unsigned int key_border[NUM_ROWS][NUM_KEYS];
+
 static int selected_i = 0, selected_j = 0;
 static int shifted = 0;
 static int location = 0;
-static int active = 1;
+static int active = 0;
 static int mod_state = 0;
-static int show_help = 0;
+// static int show_help = 0;
 
 void init_keyboard() {
-	for(int j = 0; j < NUM_ROWS; j++)
-		for(int i = 0; i < NUM_KEYS; i++)
+	for(int j = 0; j < NUM_ROWS; j++) {
+		for(int i = 0; i < NUM_KEYS; i++) {
 			toggled[j][i] = 0;
+			key_center[j][i] = key_border[j][i] = 0xFFFF;
+		}
+	}
 	selected_i = selected_j = shifted = location = 0;
-	active = 1;
+	active = 0;
 	mod_state = 0;
 
+	for (int j = 0, i; j < NUM_ROWS; j++) {
+		int x = 0;
+		for (i = 0; i < row_length[j]; i++) {
+			int length = strlen(syms[0][j][i]);
+			key_center[j][i] = x + 2 * length;
+			x += 4 * (length + 1);
+			key_border[j][i] = x;
+		}
+	}
 }
 
-char* help = 
-#ifdef RS90
-"How to use:\n"
-"  ARROWS: select key from keyboard\n"
-"  A: press key\n"
-"  B: toggle key\n"
-"     (useful for shift/ctrl...)\n"
-"  L: shift\n"
-"  R: backspace\n"
-"  SELECT: quit (on this screen),\n"
-"          change keyboard location\n"
-"          (top/bottom/hidden)\n"
-"  START: show this help\n"
-#else
-"How to use:\n"
-"  ARROWS: select key from keyboard\n"
-"  A: press key\n"
-"  B: toggle key (useful for shift/ctrl...)\n"
-"  L: shift\n"
-"  R: backspace\n"
-"  Y: change keyboard location (top/bottom)\n"
-"  X: show / hide keyboard\n"
-"  SELECT: quit\n"
-"  START: show this help\n\n"
-"Cheatcheet (tutorial at www.shellscript.sh):\n"
-"  TAB key         complete path\n"
-"  UP/DOWN keys    navigate history\n"
-"  pwd             print current directory\n"
-"  ls              list files (-l for file size)\n"
-"  cd <d>          change directory (.. = go up)\n"
-"  cp <f> <d>      copy files (dest can be dir)\n"
-"  mv <f> <d>      move files (dest can be dir)\n"
-"  rm <f>          remove files (use -rf for dir)\n"
-"  top             see running processes (q to quit)\n"
-"  more <f>        see content of text file\n"
-"  file <f>        see type of file\n"
-"  opkg install <f.ipk>  install package\n"
-"  opkg remove <f>       remove package\n"
-"  grep <pattern> <f>    find in files\n"
-#endif
-;
+// char* help = 
+// #ifdef RS90
+// "How to use:\n"
+// "  ARROWS: select key from keyboard\n"
+// "  A: press key\n"
+// "  B: toggle key\n"
+// "     (useful for shift/ctrl...)\n"
+// "  L: shift\n"
+// "  R: backspace\n"
+// "  SELECT: quit (on this screen),\n"
+// "          change keyboard location\n"
+// "          (top/bottom/hidden)\n"
+// "  START: show this help\n"
+// #else
+// "How to use:\n"
+// "  ARROWS: select key from keyboard\n"
+// "  A: press key\n"
+// "  B: toggle key (useful for shift/ctrl...)\n"
+// "  L: shift\n"
+// "  R: backspace\n"
+// "  Y: change keyboard location (top/bottom)\n"
+// "  X: show / hide keyboard\n"
+// "  SELECT: quit\n"
+// "  START: show this help\n\n"
+// "Cheatcheet (tutorial at www.shellscript.sh):\n"
+// "  TAB key         complete path\n"
+// "  UP/DOWN keys    navigate history\n"
+// "  pwd             print current directory\n"
+// "  ls              list files (-l for file size)\n"
+// "  cd <d>          change directory (.. = go up)\n"
+// "  cp <f> <d>      copy files (dest can be dir)\n"
+// "  mv <f> <d>      move files (dest can be dir)\n"
+// "  rm <f>          remove files (use -rf for dir)\n"
+// "  top             see running processes (q to quit)\n"
+// "  more <f>        see content of text file\n"
+// "  file <f>        see type of file\n"
+// "  opkg install <f.ipk>  install package\n"
+// "  opkg remove <f>       remove package\n"
+// "  grep <pattern> <f>    find in files\n"
+// #endif
+// ;
 
 void draw_keyboard(SDL_Surface* surface) {
 	unsigned short bg_color = SDL_MapRGB(surface->format, 64, 64, 64);
@@ -179,12 +193,12 @@ void draw_keyboard(SDL_Surface* surface) {
 	unsigned short sel_color = SDL_MapRGB(surface->format, 128, 255, 128);
 	unsigned short sel_toggled_color = SDL_MapRGB(surface->format, 255, 255, 128);
 	unsigned short toggled_color = SDL_MapRGB(surface->format, 192, 192, 0);
-	if(show_help) {
-		SDL_FillRect(surface, NULL, bg_color);
-		draw_string(surface, "SDL Terminal by Benob, based on st-sdl", 8, 10, sel_toggled_color);
-		draw_string(surface, help, 8, 28, sel_color);
-		return;
-	}
+	// if(show_help) {
+	// 	SDL_FillRect(surface, NULL, bg_color);
+	// 	draw_string(surface, "SDL Terminal by Benob, based on st-sdl", 8, 10, sel_toggled_color);
+	// 	draw_string(surface, help, 8, 28, sel_color);
+	// 	return;
+	// }
 	if(!active) return;
 	int total_length = -1;
 	for(int i = 0; i < NUM_KEYS && syms[0][0][i]; i++) {
@@ -275,7 +289,7 @@ void simulate_key(int key, int state) {
 			.keysym = {
 				.scancode = 0,
 				.sym = key,
-				.mod = KMOD_SYNTHETIC,
+				.mod = KMOD_RESERVED,
 				.unicode = unicode,
 			}
 		}
@@ -292,100 +306,152 @@ void simulate_key(int key, int state) {
 	//printf("%d\n", key);
 }
 
-int compute_visual_offset(int col, int row) {
-	int sum = 0;
-	for(int i = 0; i < col; i++) sum += 1 + strlen(syms[0][row][i]);
-	sum += (1 + strlen(syms[0][row][col])) / 2;
-	return sum;
+void simulate_quit(){
+	SDL_Event event = {
+		.type = SDL_QUIT,
+		.quit.type = SDL_QUIT,
+	};
+	SDL_PushEvent(&event);
 }
 
-int compute_new_col(int visual_offset, int old_row, int new_row) {
-	int new_sum = 0;
-	int new_col = 0;
-	while(new_col < row_length[new_row] - 1 && new_sum + (1 + strlen(syms[0][new_row][new_col])) / 2 < visual_offset) {
-		new_sum += 1 + strlen(syms[0][new_row][new_col]);
-		new_col++;
-	}
-	return new_col;
+inline static int compute_visual_offset(int col, int row) {
+	return key_center[row][col];
 }
+
+int compute_new_col(int visual_offset, int row) {
+	int col;
+	for (col = 0; (col < row_length[row]) && (visual_offset >= key_border[row][col]); col++);
+	return col;
+}
+
+#define KEY_TYPE_STATE(key, type, state) ((key) | ((type) << 15) | ((state) << 9))
+#define KEY_CTRL_C 0x03
 
 int handle_keyboard_event(SDL_Event* event) {
 	static int visual_offset = 0;
-	if(event->key.type == SDL_KEYDOWN && !(event->key.keysym.mod & KMOD_SYNTHETIC) && event->key.keysym.sym == KEY_ACTIVATE) {
-#ifdef RS90
-		if(show_help) {
-			exit(0);
-		}
-		if(!active) {
-			active = 1;
-			location = 0;
-		} else if(!location) {
-			location = 1;
-		} else {
-			active = 0;
-		}
-#else
-		active = ! active;
-#endif
+	int key;
+	static Uint32 tougged_tick = 0;
+
+	/* Active Switch */
+	switch (KEY_TYPE_STATE(event->key.keysym.sym, event->key.type, event->key.state)) {
+	case KEY_TYPE_STATE(KEY_ACTIVATE, SDL_KEYDOWN, SDL_PRESSED):
+		return 1;
+	case KEY_TYPE_STATE(KEY_ACTIVATE, SDL_KEYUP, SDL_RELEASED):
+		active = !active;
 		return 1;
 	}
-	if(!active) return 0;
-	if((event->key.type == SDL_KEYUP || event->key.type == SDL_KEYDOWN) && event->key.keysym.mod & KMOD_SYNTHETIC) return 0;
 
-	if(event->key.type == SDL_KEYDOWN && event->key.state == SDL_PRESSED) {
-		if(show_help) {
-			// do nothing
-		} else if(event->key.keysym.sym == KEY_QUIT) {
-			exit(0);
-		} else if(event->key.keysym.sym == KEY_HELP) {
-			show_help = 1;
-		} else if(event->key.keysym.sym == KEY_UP && selected_j > 0) {
-			selected_i = compute_new_col(visual_offset, selected_j, selected_j - 1);
-			selected_j--;
-			//selected_i = selected_i * row_length[selected_j] / row_length[selected_j + 1];
-		} else if(event->key.keysym.sym == KEY_DOWN && selected_j < NUM_ROWS - 1) {
-			selected_i = compute_new_col(visual_offset, selected_j, selected_j + 1);
-			selected_j++;
-			//selected_i = selected_i * row_length[selected_j] / row_length[selected_j - 1];
-		} else if(event->key.keysym.sym == KEY_LEFT && selected_i > 0) {
-			selected_i--;
+	if (!active) {
+		switch (KEY_TYPE_STATE(event->key.keysym.sym, event->key.type, event->key.state)) {
+		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYDOWN, SDL_PRESSED):
+			break;
+		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYUP, SDL_RELEASED):
+			if (shifted) simulate_key(KEY_CTRL_C, STATE_TYPED);
+			else simulate_key(SDLK_RETURN, STATE_TYPED);
+			break;
+		case KEY_TYPE_STATE(KEY_TOGGLE, SDL_KEYDOWN, SDL_PRESSED):
+			simulate_key(SDLK_BACKSPACE, STATE_DOWN);
+			break;
+		case KEY_TYPE_STATE(KEY_TOGGLE, SDL_KEYUP, SDL_RELEASED):
+			simulate_key(SDLK_BACKSPACE, STATE_UP);
+			break;
+		case KEY_TYPE_STATE(KEY_ENTER, SDL_KEYDOWN, SDL_PRESSED):
+			simulate_key(SDLK_SPACE, STATE_DOWN);
+			break;
+		case KEY_TYPE_STATE(KEY_ENTER, SDL_KEYUP, SDL_RELEASED):
+			simulate_key(SDLK_SPACE, STATE_UP);
+			break;
+		case KEY_TYPE_STATE(KEY_SHIFT, SDL_KEYDOWN, SDL_PRESSED):
+			shifted = 1;
+			break;
+		case KEY_TYPE_STATE(KEY_SHIFT, SDL_KEYUP, SDL_RELEASED):
+			shifted = 0;
+			break;
+		case KEY_TYPE_STATE(KEY_HELP, SDL_KEYDOWN, SDL_PRESSED):
+			simulate_key(SDLK_TAB, STATE_DOWN);
+			break;
+		case KEY_TYPE_STATE(KEY_HELP, SDL_KEYUP, SDL_RELEASED):
+			if (shifted) simulate_quit();
+			else simulate_key(SDLK_TAB, STATE_UP);
+			break;
+		default:
+			return 0;
+		}
+	} else {
+		switch (KEY_TYPE_STATE(event->key.keysym.sym, event->key.type, event->key.state)) {
+		case KEY_TYPE_STATE(KEY_QUIT, SDL_KEYDOWN, SDL_PRESSED):
+			simulate_quit();
+			break;
+		case KEY_TYPE_STATE(KEY_HELP, SDL_KEYDOWN, SDL_PRESSED):
+			if (shifted) simulate_quit();
+			else simulate_key(SDLK_TAB, STATE_TYPED);
+			break;
+		case KEY_TYPE_STATE(KEY_UP, SDL_KEYDOWN, SDL_PRESSED):
+			if (--selected_j < 0) selected_j = NUM_ROWS - 1;
+			selected_i = compute_new_col(visual_offset, selected_j);
+			break;
+		case KEY_TYPE_STATE(KEY_DOWN, SDL_KEYDOWN, SDL_PRESSED):
+			if (++selected_j > NUM_ROWS - 1) selected_j = 0;
+			selected_i = compute_new_col(visual_offset, selected_j);
+			break;
+		case KEY_TYPE_STATE(KEY_LEFT, SDL_KEYDOWN, SDL_PRESSED):
+			if (--selected_i < 0) selected_i = row_length[selected_j] - 1;
 			visual_offset = compute_visual_offset(selected_i, selected_j);
-		} else if(event->key.keysym.sym == KEY_RIGHT && selected_i < row_length[selected_j] - 1) {
-			selected_i++;
+			break;
+		case KEY_TYPE_STATE(KEY_RIGHT, SDL_KEYDOWN, SDL_PRESSED):
+			if (++selected_i > row_length[selected_j] - 1) selected_i = 0;
 			visual_offset = compute_visual_offset(selected_i, selected_j);
-		} else if(event->key.keysym.sym == KEY_SHIFT) {
+			break;
+		case KEY_TYPE_STATE(KEY_SHIFT, SDL_KEYDOWN, SDL_PRESSED):
 			shifted = 1;
 			toggled[4][0] = 1;
 			update_modstate(SDLK_LSHIFT, STATE_DOWN);
-		} else if(event->key.keysym.sym == KEY_LOCATION) {
-			location = !location;
-		} else if(event->key.keysym.sym == KEY_BACKSPACE) {
-			simulate_key(SDLK_BACKSPACE, STATE_TYPED);
-		} else if(event->key.keysym.sym == KEY_TOGGLE) {
-			toggled[selected_j][selected_i] = 1 - toggled[selected_j][selected_i];
-			if(toggled[selected_j][selected_i]) simulate_key(keys[shifted][selected_j][selected_i], STATE_DOWN);
-			else simulate_key(keys[shifted][selected_j][selected_i], STATE_UP);
-			if(selected_j == 4 && (selected_i == 0 || selected_i == 11)) shifted = toggled[selected_j][selected_i];
-		} else if(event->key.keysym.sym == KEY_ENTER) {
-			int key = keys[shifted][selected_j][selected_i];
-			if(mod_state & KMOD_CTRL) {
-				if (key >= 64 && key < 64 + 32) simulate_key(key - 64, STATE_DOWN);
-				else if (key >= 97 && key < 97 + 31) simulate_key(key - 96, STATE_DOWN);
-			} else if(mod_state & KMOD_SHIFT && key >= SDLK_a && key <= SDLK_z) {
-				simulate_key(key - SDLK_a + 'A', STATE_TYPED);
-			} else {
-				simulate_key(key, STATE_TYPED);
-			}
-		}
-	} else if(event->key.type == SDL_KEYUP || event->key.state == SDL_RELEASED) {
-		if(show_help) {
-			show_help = 0;
-		} else if(event->key.keysym.sym == KEY_SHIFT) {
+			break;
+		case KEY_TYPE_STATE(KEY_SHIFT, SDL_KEYUP, SDL_RELEASED):
 			shifted = 0;
 			toggled[4][0] = 0;
 			update_modstate(SDLK_LSHIFT, STATE_UP);
+			break;
+		case KEY_TYPE_STATE(KEY_LOCATION, SDL_KEYDOWN, SDL_PRESSED):
+			location = !location;
+			break;
+		case KEY_TYPE_STATE(KEY_TOGGLE, SDL_KEYDOWN, SDL_PRESSED):
+			simulate_key(SDLK_BACKSPACE, STATE_TYPED);
+			break;
+		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYDOWN, SDL_PRESSED):
+			break;
+		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYUP, SDL_RELEASED):
+			if (shifted) location = !location;
+			else simulate_key(SDLK_RETURN, STATE_TYPED);
+			break;
+		case KEY_TYPE_STATE(KEY_ENTER, SDL_KEYDOWN, SDL_PRESSED):
+			tougged_tick = SDL_GetTicks() + 500;
+			break;
+		case KEY_TYPE_STATE(KEY_ENTER, SDL_KEYUP, SDL_RELEASED):
+			if(toggled[selected_j][selected_i]) {
+				toggled[selected_j][selected_i] = 0;
+				simulate_key(keys[shifted][selected_j][selected_i], STATE_UP);
+				if(selected_j == 4 && (selected_i == 0 || selected_i == 11)) shifted = 0;
+				break;
+			}
+			if (SDL_GetTicks() > tougged_tick) {
+				toggled[selected_j][selected_i] = 1;
+				simulate_key(keys[shifted][selected_j][selected_i], STATE_DOWN);
+				if(selected_j == 4 && (selected_i == 0 || selected_i == 11)) shifted = 1;
+			} else {
+				key = keys[shifted][selected_j][selected_i];
+				if (mod_state & KMOD_CTRL) {
+					if (key >= 64 && key < 64 + 32) simulate_key(key - 64, STATE_DOWN);
+					else if (key >= 97 && key < 97 + 31) simulate_key(key - 96, STATE_DOWN);
+				} else if(mod_state & KMOD_SHIFT && key >= SDLK_a && key <= SDLK_z) {
+					simulate_key(key - SDLK_a + 'A', STATE_TYPED);
+				} else {
+					simulate_key(key, STATE_TYPED);
+				}
+			}
 		}
 	}
+
 	return 1;
 }
 
@@ -405,7 +471,7 @@ int main() {
 		while( SDL_PollEvent( &event ) ) {
 			if( event.type == SDL_QUIT ) { 
 				return 0;
-			} else {
+			} else if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
 				handle_keyboard_event(&event);
 			}
 		}

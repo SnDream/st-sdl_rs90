@@ -2713,7 +2713,7 @@ run(void) {
         if(ev.type == SDL_QUIT) break;
 
         if(ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) {
-            if(handle_keyboard_event(&ev)) {
+            if(!(ev.key.keysym.mod & KMOD_RESERVED) && handle_keyboard_event(&ev)) {
                 /*SDL_Event expose_event = {
                     .type = SDL_VIDEOEXPOSE
                 };

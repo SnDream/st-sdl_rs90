@@ -1,0 +1,72 @@
+SDL Terminal by Benob, based on st-sdl
+RS90 Version (Origin) by retardTonic
+RS90 Version (SmallFont) by SnDream
+
+== How to use ==
+D-Pad
+    Press Up/Down/Left/Right
+R Button
+    Press ENTER
+B Button
+    Press BACKSPACE
+A Button
+    Press SPACE
+Select Button
+    Show Keyboard
+Start Button
+    Press TAB
+L + R Button
+    Press CTRL+C
+L + Start Button
+    Exit SDL Term
+
+== Keyboard ==
+D-Pad
+    Move on keyboard
+L Button (Hold)
+    Hold Shift
+R Button
+    Press ENTER
+B Button
+    Press BACKSPACE
+A Button (Press)
+    Press key on keyboard
+A Button (Hold)
+    Toggle key (useful for shift/ctrl...)
+Select Button
+    Hide keyboard
+Start Button
+    Press TAB
+L + R Button
+    Switch Keyboard Location
+L + Start Button
+    Exit SDL Term
+
+== Cheeatcheet ==
+(tutorial at www.shellscript.sh):
+TAB key
+    complete path
+UP/DOWN keys
+    navigate history
+pwd
+    print current directory
+ls
+    list files (-l for file size)
+cd <d>
+    change directory (.. = go up)
+cp <f> <d>
+    copy files (dest can be dir)
+mv <f> <d>
+    move files (dest can be dir)
+rm <f>
+    remove files (use -rf for dir)
+top
+    see running processes (q to quit)
+less <f>
+    see content of text file
+grep <pattern> <f>
+    find in files
+
+== Terminfo ==
+Use a custom version of st-256color
+Tested on dialong, htop, nano

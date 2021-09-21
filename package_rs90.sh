@@ -1,6 +1,7 @@
 #!/bin/sh
 
 mkdir -p opk
+cp manual.txt opk/manual.txt
 cp ./st opk/st.dge
 cp ./st.png opk/st.png
 cp -r ./terminfo_dir opk/terminfo
@@ -8,8 +9,9 @@ cp libst-preload.so opk/libst-preload.so
 
 echo '[Desktop Entry]
 Type=Application
-Name=st
+Name=SDL Term
 Comment=Simple terminal
+X-OD-Manual=manual.txt
 Exec=st.dge
 Icon=st
 Terminal=false
