@@ -112,8 +112,8 @@ static char* syms[2][NUM_ROWS][NUM_KEYS] = {
 
 static unsigned char toggled[NUM_ROWS][NUM_KEYS];
 
-static unsigned int key_center[NUM_ROWS][NUM_KEYS];
-static unsigned int key_border[NUM_ROWS][NUM_KEYS];
+static unsigned char key_center[NUM_ROWS][NUM_KEYS];
+static unsigned char key_border[NUM_ROWS][NUM_KEYS];
 
 static int selected_i = 0, selected_j = 0;
 static int shifted = 0;
@@ -123,18 +123,14 @@ static int mod_state = 0;
 // static int show_help = 0;
 
 void init_keyboard() {
-	for(int j = 0; j < NUM_ROWS; j++) {
-		for(int i = 0; i < NUM_KEYS; i++) {
-			toggled[j][i] = 0;
-			key_center[j][i] = key_border[j][i] = 0xFFFF;
-		}
-	}
+	memset(toggled, 0, sizeof(toggled));
+	memset(key_border, 0xFF, sizeof(key_border));
 	selected_i = selected_j = shifted = location = 0;
 	active = 0;
 	mod_state = 0;
 
 	for (int j = 0, i; j < NUM_ROWS; j++) {
-		int x = 0;
+		int x = (j != 3) ? 0 : 2; /* make move between row 3 and other in some col */
 		for (i = 0; i < row_length[j]; i++) {
 			int length = strlen(syms[0][j][i]);
 			key_center[j][i] = x + 2 * length;
