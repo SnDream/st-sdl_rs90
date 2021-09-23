@@ -57,6 +57,23 @@
 static int row_length[NUM_ROWS] = {13, 17, 17, 15, 14, 8};
 
 static SDLKey keys[2][NUM_ROWS][NUM_KEYS] = {
+#ifdef RS90
+	{
+		{SDLK_ESCAPE, SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12},
+		{SDLK_BACKQUOTE, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6, SDLK_7, SDLK_8, SDLK_9, SDLK_0, SDLK_MINUS, SDLK_EQUALS, SDLK_BACKSPACE, SDLK_INSERT, SDLK_HOME, SDLK_UP},
+		{SDLK_TAB, SDLK_q, SDLK_w, SDLK_e, SDLK_r, SDLK_t, SDLK_y, SDLK_u, SDLK_i, SDLK_o, SDLK_p, SDLK_LEFTBRACKET, SDLK_RIGHTBRACKET, SDLK_BACKSLASH, SDLK_DELETE, SDLK_END, SDLK_DOWN},
+		{SDLK_CAPSLOCK, SDLK_a, SDLK_s, SDLK_d, SDLK_f, SDLK_g, SDLK_h, SDLK_j, SDLK_k, SDLK_l, SDLK_SEMICOLON, SDLK_QUOTE, SDLK_RETURN, SDLK_PAGEUP, SDLK_LEFT},
+		{SDLK_LSHIFT, SDLK_z, SDLK_x, SDLK_c, SDLK_v, SDLK_b, SDLK_n, SDLK_m, SDLK_COMMA, SDLK_PERIOD, SDLK_SLASH, SDLK_RSHIFT, SDLK_PAGEDOWN, SDLK_RIGHT},
+		{SDLK_LCTRL, SDLK_LSUPER, SDLK_LALT, SDLK_SPACE, SDLK_RALT, SDLK_RSUPER, SDLK_MENU, SDLK_RCTRL}
+	}, {
+		{SDLK_ESCAPE, SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12},
+		{'~', SDLK_EXCLAIM, SDLK_AT, SDLK_HASH, SDLK_DOLLAR, '%', SDLK_CARET, SDLK_AMPERSAND, SDLK_ASTERISK, SDLK_LEFTPAREN, SDLK_RIGHTPAREN, SDLK_UNDERSCORE, SDLK_PLUS, SDLK_BACKSPACE, SDLK_INSERT, SDLK_HOME, SDLK_UP},
+		{SDLK_TAB, SDLK_q, SDLK_w, SDLK_e, SDLK_r, SDLK_t, SDLK_y, SDLK_u, SDLK_i, SDLK_o, SDLK_p, '{', '}', '|', SDLK_DELETE, SDLK_END, SDLK_DOWN},
+		{SDLK_CAPSLOCK, SDLK_a, SDLK_s, SDLK_d, SDLK_f, SDLK_g, SDLK_h, SDLK_j, SDLK_k, SDLK_l, SDLK_COLON, SDLK_QUOTEDBL, SDLK_RETURN, SDLK_PAGEUP, SDLK_LEFT},
+		{SDLK_LSHIFT, SDLK_z, SDLK_x, SDLK_c, SDLK_v, SDLK_b, SDLK_n, SDLK_m, SDLK_LESS, SDLK_GREATER, SDLK_QUESTION, SDLK_RSHIFT, SDLK_PAGEDOWN, SDLK_RIGHT},
+		{SDLK_LCTRL, SDLK_LSUPER, SDLK_LALT, SDLK_SPACE, SDLK_RALT, SDLK_RSUPER, SDLK_MENU, SDLK_RCTRL}
+	}
+#else
 	{
 		{SDLK_ESCAPE, SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12},
 		{SDLK_BACKQUOTE, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6, SDLK_7, SDLK_8, SDLK_9, SDLK_0, SDLK_MINUS, SDLK_EQUALS, SDLK_BACKSPACE, SDLK_INSERT, SDLK_DELETE, SDLK_UP},
@@ -72,23 +89,24 @@ static SDLKey keys[2][NUM_ROWS][NUM_KEYS] = {
 		{SDLK_LSHIFT, SDLK_z, SDLK_x, SDLK_c, SDLK_v, SDLK_b, SDLK_n, SDLK_m, SDLK_LESS, SDLK_GREATER, SDLK_QUESTION, SDLK_RSHIFT, SDLK_PAGEDOWN, SDLK_RIGHT},
 		{SDLK_LCTRL, SDLK_LSUPER, SDLK_LALT, SDLK_SPACE, SDLK_RALT, SDLK_RSUPER, SDLK_MENU, SDLK_RCTRL}
 	}
+#endif
 };
 
 static char* syms[2][NUM_ROWS][NUM_KEYS] = {
 #ifdef RS90
 	{
-		{"ESC",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
-		{"`",     "1",   "2",   "3",     "4",   "5",   "6",    "7",  "8",  "9",  "0",   "-",   "=",     "<BS", "INS", "DEL", "\x10", NULL},
-		{"TAB",   "q",   "w",   "e",     "r",   "t",   "y",    "u",  "i",  "o",  "p",   "[",   "]",     "\\",  "HOM", "END", "\x11", NULL},
-		{"CAPS",  "a",   "s",   "d",     "f",   "g",   "h",    "j",  "k",  "l",  ";",   "'",   "ENTER", "PGUP", "<", NULL},
-		{"SHIFT", "z",   "x",   "c",     "v",   "b",   "n",    "m",  ",",  ".",  "/",   "SHIFT ", "PGDN", ">", NULL},
+		{"ESC",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "\x14\x15", "\x14\x16", "\x14\x17", NULL},
+		{" `",     "1",   "2",   "3",     "4",   "5",   "6",    "7",  "8",  "9",  "0",   "-",   "=",     "\x12\x18", "INS", "HOM", "\x10", NULL},
+		{"TAB",   "q",   "w",   "e",     "r",   "t",   "y",    "u",  "i",  "o",  "p",   "[",   "]",     "\\",  "DEL", "END", "\x11", NULL},
+		{"CAPS",  "a",   "s",   "d",     "f",   "g",   "h",    "j",  "k",  "l",  ";",   "'",   "ENTER", "PGUP", "\x12", NULL},
+		{"SHIFT", "z",   "x",   "c",     "v",   "b",   "n",    "m",  ",",  ".",  "/",   " SHIFT", "PGDN", "\x13", NULL},
 		{"CTRL",  "WIN", "ALT", "        ", "ALT", "WIN", "MENU", "CTRL", NULL}
 	}, {
-		{"ESC",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "10", "11", "12", NULL},
-		{"~",     "!",   "@",   "#",     "$",   "%",   "^",    "&",  "*",  "(",  ")",   "_",   "+",     "<BS", "INS", "DEL", "\x10", NULL},
-		{"TAB",   "Q",   "W",   "E",     "R",   "T",   "Y",    "U",  "I",  "O",  "P",   "{",   "}",     "|",   "HOM", "END", "\x11", NULL},
-		{"CAPS",  "A",   "S",   "D",     "F",   "G",   "H",    "J",  "K",  "L",  ":",   "\"",   "ENTER", "PGUP", "<", NULL},
-		{"SHIFT", "Z",   "X",   "C",     "V",   "B",   "N",    "M",  "<",  ">",  "?",   "SHIFT ", "PGDN", ">", NULL},
+		{"ESC",   "F1",  "F2",  "F3",    "F4",  "F5",  "F6",   "F7", "F8", "F9", "\x14\x15", "\x14\x16", "\x14\x17", NULL},
+		{" ~",     "!",   "@",   "#",     "$",   "%",   "^",    "&",  "*",  "(",  ")",   "_",   "+",     "\x12\x18", "INS", "HOM", "\x10", NULL},
+		{"TAB",   "Q",   "W",   "E",     "R",   "T",   "Y",    "U",  "I",  "O",  "P",   "{",   "}",     "|",   "DEL", "END", "\x11", NULL},
+		{"CAPS",  "A",   "S",   "D",     "F",   "G",   "H",    "J",  "K",  "L",  ":",   "\"",   "ENTER", "PGUP", "\x12", NULL},
+		{"SHIFT", "Z",   "X",   "C",     "V",   "B",   "N",    "M",  "<",  ">",  "?",    " SHIFT", "PGDN", "\x13", NULL},
 		{"CTRL",  "WIN", "ALT", "        ", "ALT", "WIN", "MENU", "CTRL", NULL}
 	}
 #else
@@ -131,7 +149,7 @@ void init_keyboard() {
 	mod_state = 0;
 
 	for (int j = 0, i; j < NUM_ROWS; j++) {
-		int x = (j != 3) ? 0 : 2; /* make move between row 3 and other in some col */
+		int x = (strlen(syms[0][j][0]) & 1) ? 2 : 0; /* col align */
 		for (i = 0; i < row_length[j]; i++) {
 			int length = strlen(syms[0][j][i]);
 			key_center[j][i] = x + 2 * length;
@@ -203,7 +221,7 @@ void draw_keyboard(SDL_Surface* surface) {
 		total_length += (1 + strlen(syms[0][0][i])) * 4;
 	}
 #ifdef RS90
-	int center_x = (surface->w - total_length);
+	int center_x = (surface->w - total_length) + 1;
 	int x = center_x, y = location ? 3 : surface->h - 8 * (NUM_ROWS);
 #else
 	int center_x = (surface->w - total_length) / 2;
@@ -211,7 +229,7 @@ void draw_keyboard(SDL_Surface* surface) {
 #endif
 
 #ifdef RS90
-	SDL_Rect rect = {x - 3, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
+	SDL_Rect rect = {x - 4, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
 #else
 	SDL_Rect rect = {x - 4, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
 #endif
@@ -221,7 +239,7 @@ void draw_keyboard(SDL_Surface* surface) {
 		x = center_x;
 		for(int i = 0; i < row_length[j]; i++) {
 			int length = strlen(syms[shifted][j][i]);
-			SDL_Rect r2 = {x - 1, y - 1, length * 4 + 3, 7};
+			SDL_Rect r2 = {x - 2, y - 1, length * 4 + 3, 7};
 			if(toggled[j][i]) {
 				if(selected_i == i && selected_j == j) {
 					SDL_FillRect(surface, &r2, sel_toggled_color);

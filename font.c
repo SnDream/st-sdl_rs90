@@ -266,8 +266,8 @@ static const unsigned char boxdrawing_font[] = {
 
 void draw_font(SDL_Surface* surface, const unsigned char* ptr, int x, int y, unsigned short color) {
 	for (int ys = 0; (ys < 6) && (y + ys < surface->h); ptr++, ys++) {
-		for (int xs = 0; (xs < 5) && (x + xs < surface->w); xs++) {
-			if (*ptr & (1u << (8 - xs))) {
+		for (int xs = 0; (xs < 4) && (x + xs < surface->w); xs++) {
+			if (*ptr & (1u << (7 - xs))) {
 				((unsigned short*)surface->pixels)[(y + ys ) * (surface->w) + x + xs] = color;
 			}
 		}
@@ -311,20 +311,48 @@ void draw_string(SDL_Surface* surface, const char* text, int orig_x, int orig_y,
 }
 
 static const unsigned char kb_font[] = {
-	0x00, 0x40, 0xa0, 0xa0, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0xa0, 0xa0, 0x40, 0x00, 0x00, 0x00, 0x00,
+	0x20, 0x70, 0xa8, 0x20, 0x20, 0x00, 0x00, 0x00,
+	0x20, 0x20, 0xa8, 0x70, 0x20, 0x00, 0x00, 0x00,
+	0x20, 0x40, 0xf8, 0x40, 0x20, 0x00, 0x00, 0x00,
+	0x20, 0x10, 0xf8, 0x10, 0x20, 0x00, 0x00, 0x00,
+	0xe8, 0x88, 0xe8, 0x88, 0x88, 0x00, 0x00, 0x00,
+	0x70, 0x50, 0x50, 0x50, 0x70, 0x00, 0x00, 0x00,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00,
+	0x70, 0x10, 0x70, 0x40, 0x70, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
+
+void draw_kb_font(SDL_Surface* surface, const unsigned char* ptr, int x, int y, unsigned short color) {
+	for (int ys = 0; (ys < 6) && (y + ys < surface->h); ptr++, ys++) {
+		for (int xs = -1; (xs < 4) && (x + xs < surface->w); xs++) {
+			if (*ptr & (1u << (7 - 1 - xs))) {
+				((unsigned short*)surface->pixels)[(y + ys ) * (surface->w) + x + xs] = color;
+			}
+		}
+	}
+}
 
 void draw_kb_string(SDL_Surface* surface, const char* text, int orig_x, int orig_y, unsigned short color) {
 	int x = orig_x, y = orig_y;
 	while(*text) {
-		if(*text == '\n') {
+		switch (*text) {
+		case '\n':
 			x = orig_x;
 			y += 6;
-		} else if (*text >= 0x10 && *text < 0x12) {
-			draw_font(surface, kb_font + (*text - 0x10) * 8, x, y, color);
-			x += 4;
-		} else {
+			break;
+		case 0x10:
+		case 0x11:
+		case 0x12:
+		case 0x13:
+		case 0x14:
+		case 0x15:
+		case 0x16:
+		case 0x17:
+		case 0x18:
+			draw_kb_font(surface, kb_font + (*text - 0x10) * 8, x, y, color);
+			x += 5;
+			break;
+		default:
 			draw_char(surface, *text, x, y, color);
 			x += 4;
 		}
