@@ -14,7 +14,7 @@ all: options st libst-preload.so sdl_test terminfo_dir
 
 rs90: all
 
-terminfo_dir: st-256color.terminfo
+terminfo_dir: st.info
 	@rm -rf $@
 	@tic -o $@ $<
 
