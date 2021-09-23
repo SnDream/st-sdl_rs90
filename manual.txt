@@ -3,8 +3,8 @@ RS90 Version (Origin) by retardTonic
 RS90 Version (SmallFont) by SnDream
 
 == How to use ==
-D-Pad
-    Press Up/Down/Left/Right
+D-Pad Up / Down / Left / Right
+    Press Up / Down / Left / Right
 R Button
     Press ENTER
 B Button
@@ -21,7 +21,7 @@ L + Start Button
     Exit SDL Term
 
 == Keyboard ==
-D-Pad
+D-Pad Up / Down / Left / Right
     Move on keyboard
 L Button (Hold)
     Hold Shift
@@ -31,16 +31,18 @@ B Button
     Press BACKSPACE
 A Button (Press)
     Press key on keyboard
-A Button (Hold)
+A Button (Hold > 0.5s)
     Toggle key (useful for shift/ctrl...)
 Select Button
     Hide keyboard
 Start Button
     Press TAB
 L + R Button
-    Switch Keyboard Location
+    Press CTRL+C
 L + Start Button
     Exit SDL Term
+Select + D-Pad Up / Down
+    Switch Keyboard Location
 
 == Cheeatcheet ==
 (tutorial at www.shellscript.sh):
@@ -69,4 +71,4 @@ grep <pattern> <f>
 
 == Terminfo ==
 Use a custom version of st-256color
-Tested on dialong, htop, nano
+Tested on dialog, htop, nano

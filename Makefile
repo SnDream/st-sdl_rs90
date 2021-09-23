@@ -44,7 +44,7 @@ st: ${OBJ}
 
 clean:
 	@echo cleaning
-	@rm -f st ${OBJ} st-${VERSION}.tar.gz st-preload.o msg_queue.o libst-preload.so sdl_test.o
+	@rm -f st ${OBJ} st-${VERSION}.tar.gz st-preload.o msg_queue.o libst-preload.so sdl_test.o config.h
 	@rm -rf terminfo_dir
 
 dist: clean

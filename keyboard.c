@@ -117,6 +117,7 @@ static unsigned char key_border[NUM_ROWS][NUM_KEYS];
 
 static int selected_i = 0, selected_j = 0;
 static int shifted = 0;
+static int loc_shifted = 0;
 static int location = 0;
 static int active = 0;
 static int mod_state = 0;
@@ -183,6 +184,7 @@ void init_keyboard() {
 // ;
 
 void draw_keyboard(SDL_Surface* surface) {
+	if(!active) return;
 	unsigned short bg_color = SDL_MapRGB(surface->format, 64, 64, 64);
 	unsigned short key_color = SDL_MapRGB(surface->format, 128, 128, 128);
 	unsigned short text_color = SDL_MapRGB(surface->format, 0, 0, 0);
@@ -195,23 +197,21 @@ void draw_keyboard(SDL_Surface* surface) {
 	// 	draw_string(surface, help, 8, 28, sel_color);
 	// 	return;
 	// }
-	if(!active) return;
-	int total_length = -1;
+	
+	int total_length = 0;
 	for(int i = 0; i < NUM_KEYS && syms[0][0][i]; i++) {
 		total_length += (1 + strlen(syms[0][0][i])) * 4;
 	}
 #ifdef RS90
-	int center_x = (surface->w - total_length) - 2;
-	int x = center_x, y = surface->h - 8 * (NUM_ROWS) - 2;
-	if(location == 1) y = 2;
+	int center_x = (surface->w - total_length);
+	int x = center_x, y = location ? 3 : surface->h - 8 * (NUM_ROWS);
 #else
 	int center_x = (surface->w - total_length) / 2;
-	int x = center_x, y = surface->h - 8 * (NUM_ROWS) - 16;
-	if(location == 1) y = 16;
+	int x = center_x, y = location ? 16 : surface->h - 8 * (NUM_ROWS) - 16;
 #endif
 
 #ifdef RS90
-	SDL_Rect rect = {x - 2, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
+	SDL_Rect rect = {x - 3, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
 #else
 	SDL_Rect rect = {x - 4, y - 3, total_length + 3, NUM_ROWS * 8 + 3};
 #endif
@@ -331,31 +331,27 @@ int handle_keyboard_event(SDL_Event* event) {
 	/* Active Switch */
 	switch (KEY_TYPE_STATE(event->key.keysym.sym, event->key.type, event->key.state)) {
 	case KEY_TYPE_STATE(KEY_ACTIVATE, SDL_KEYDOWN, SDL_PRESSED):
+		if (!loc_shifted) loc_shifted = 1;
 		return 1;
 	case KEY_TYPE_STATE(KEY_ACTIVATE, SDL_KEYUP, SDL_RELEASED):
-		active = !active;
+		if (loc_shifted) active = !active;
+		loc_shifted = 0;
 		return 1;
 	}
 
 	if (!active) {
 		switch (KEY_TYPE_STATE(event->key.keysym.sym, event->key.type, event->key.state)) {
 		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYDOWN, SDL_PRESSED):
+			if (!shifted) simulate_key(SDLK_RETURN, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYUP, SDL_RELEASED):
 			if (shifted) simulate_key(KEY_CTRL_C, STATE_TYPED);
-			else simulate_key(SDLK_RETURN, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_TOGGLE, SDL_KEYDOWN, SDL_PRESSED):
-			simulate_key(SDLK_BACKSPACE, STATE_DOWN);
-			break;
-		case KEY_TYPE_STATE(KEY_TOGGLE, SDL_KEYUP, SDL_RELEASED):
-			simulate_key(SDLK_BACKSPACE, STATE_UP);
+			simulate_key(SDLK_BACKSPACE, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_ENTER, SDL_KEYDOWN, SDL_PRESSED):
-			simulate_key(SDLK_SPACE, STATE_DOWN);
-			break;
-		case KEY_TYPE_STATE(KEY_ENTER, SDL_KEYUP, SDL_RELEASED):
-			simulate_key(SDLK_SPACE, STATE_UP);
+			simulate_key(SDLK_SPACE, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_SHIFT, SDL_KEYDOWN, SDL_PRESSED):
 			shifted = 1;
@@ -364,11 +360,8 @@ int handle_keyboard_event(SDL_Event* event) {
 			shifted = 0;
 			break;
 		case KEY_TYPE_STATE(KEY_HELP, SDL_KEYDOWN, SDL_PRESSED):
-			simulate_key(SDLK_TAB, STATE_DOWN);
-			break;
-		case KEY_TYPE_STATE(KEY_HELP, SDL_KEYUP, SDL_RELEASED):
 			if (shifted) simulate_quit();
-			else simulate_key(SDLK_TAB, STATE_UP);
+			simulate_key(SDLK_TAB, STATE_TYPED);
 			break;
 		default:
 			return 0;
@@ -383,10 +376,12 @@ int handle_keyboard_event(SDL_Event* event) {
 			else simulate_key(SDLK_TAB, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_UP, SDL_KEYDOWN, SDL_PRESSED):
+			if (loc_shifted) { loc_shifted = 0; location = 1; break; }
 			if (--selected_j < 0) selected_j = NUM_ROWS - 1;
 			selected_i = compute_new_col(visual_offset, selected_j);
 			break;
 		case KEY_TYPE_STATE(KEY_DOWN, SDL_KEYDOWN, SDL_PRESSED):
+			if (loc_shifted) { loc_shifted = 0; location = 0; break; }
 			if (++selected_j > NUM_ROWS - 1) selected_j = 0;
 			selected_i = compute_new_col(visual_offset, selected_j);
 			break;
@@ -415,10 +410,10 @@ int handle_keyboard_event(SDL_Event* event) {
 			simulate_key(SDLK_BACKSPACE, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYDOWN, SDL_PRESSED):
+			if (!shifted) simulate_key(SDLK_RETURN, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_BACKSPACE, SDL_KEYUP, SDL_RELEASED):
-			if (shifted) location = !location;
-			else simulate_key(SDLK_RETURN, STATE_TYPED);
+			if (shifted) simulate_key(KEY_CTRL_C, STATE_TYPED);
 			break;
 		case KEY_TYPE_STATE(KEY_ENTER, SDL_KEYDOWN, SDL_PRESSED):
 			tougged_tick = SDL_GetTicks() + 500;

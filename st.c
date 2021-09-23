@@ -468,7 +468,7 @@ selinit(void) {
 
 static int
 x2col(int x) {
-	x -= borderpx;
+	x -= BORDERPX;
 	x /= xw.cw;
 
 	return LIMIT(x, 0, term.col-1);
@@ -476,7 +476,7 @@ x2col(int x) {
 
 static int
 y2row(int y) {
-	y -= borderpx;
+	y -= BORDERPX;
 	y /= xw.ch;
 
 	return LIMIT(y, 0, term.row-1);
@@ -885,6 +885,7 @@ ttynew(void) {
 		break;
 	default:
 		close(s);
+		nice(10); /* reduce -O2 laggy */
 		cmdfd = m;
 		signal(SIGCHLD, sigchld);
 		if(opt_io) {
@@ -2053,8 +2054,8 @@ tresize(int col, int row) {
 
 void
 xresize(int col, int row) {
-	xw.tw = MAX(1, 2*borderpx + col * xw.cw);
-	xw.th = MAX(1, 2*borderpx + row * xw.ch);
+	xw.tw = MAX(1, 2*BORDERPX + col * xw.cw);
+	xw.th = MAX(1, 2*BORDERPX + row * xw.ch);
 }
 
 void
@@ -2088,8 +2089,8 @@ void
 sdltermclear(int col1, int row1, int col2, int row2) {
 	if(xw.win == NULL) return;
 	SDL_Rect r = {
-		borderpx + col1 * xw.cw,
-		borderpx + row1 * xw.ch,
+		BORDERPX + col1 * xw.cw,
+		BORDERPX + row1 * xw.ch,
 		(col2-col1+1) * xw.cw,
 		(row2-row1+1) * xw.ch
 	};
@@ -2146,6 +2147,7 @@ sdlloadfonts(char *fontstr, int fontsize) {
 	TTF_SetFontStyle(dc.ibfont, TTF_STYLE_ITALIC);*/
 }
 
+__attribute__((unused))
 void
 xzoom(const Arg *arg)
 {
@@ -2209,8 +2211,8 @@ sdlinit(void) {
 		xw.w = xw.fw;
 	} else {
 		/* window - default size */
-		xw.h = 2*borderpx + term.row * xw.ch;
-		xw.w = 2*borderpx + term.col * xw.cw;
+		xw.h = initial_height; // 2*BORDERPX + term.row * xw.ch;
+		xw.w = initial_width;  // 2*BORDERPX + term.col * xw.cw;
 		xw.fx = 0;
 		xw.fy = 0;
 	}
@@ -2242,8 +2244,8 @@ sdlinit(void) {
 	//vi = SDL_GetVideoInfo();
 	//cresize(vi->current_w, vi->current_h);
 
-    //SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-	SDL_EnableKeyRepeat(200, 20);
+    // SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+	SDL_EnableKeyRepeat(200, 50);
 
 	SDL_Event event = {.type = SDL_VIDEOEXPOSE };
 	SDL_PushEvent(&event);
@@ -2251,7 +2253,9 @@ sdlinit(void) {
 
 void
 xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
-	int winx = borderpx + x * xw.cw, winy = borderpx + y * xw.ch,
+	if(xw.win == NULL) return;
+
+	int winx = BORDERPX + x * xw.cw, winy = BORDERPX + y * xw.ch,
 	    width = charlen * xw.cw;
 	//TTF_Font *font = dc.font;
 	SDL_Color *fg = &dc.colors[base.fg], *bg = &dc.colors[base.bg],
@@ -2309,7 +2313,7 @@ xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 
 	/* Intelligent cleaning up of the borders. */
 	if(x == 0) {
-		xclear(0, (y == 0)? 0 : winy, borderpx,
+		xclear(0, (y == 0)? 0 : winy, BORDERPX,
 			winy + xw.ch + (y == term.row-1)? xw.h : 0);
 	}
 	if(x + charlen >= term.col-1) {
@@ -2317,15 +2321,13 @@ xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 			(y == term.row-1)? xw.h : (winy + xw.ch));
 	}
 	if(y == 0)
-		xclear(winx, 0, winx + width, borderpx);
+		xclear(winx, 0, winx + width, BORDERPX);
 	if(y == term.row-1)
-		xclear(winx, winy + xw.ch, winx + width, xw.h);
+		xclear(winx, winy + xw.ch, winx + width, 4);
 
 	{
 		//SDL_Surface *text_surface;
 		SDL_Rect r = {winx, winy, width, xw.ch};
-
-	if(xw.win != NULL) 
 		SDL_FillRect(xw.win, &r, SDL_MapRGB(xw.win->format, bg->r, bg->g, bg->b));
 
 /*#ifdef USE_ANTIALIASING
@@ -2345,23 +2347,13 @@ xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 			//r.y += TTF_FontAscent(font) + 1;
 			u.y += xw.ch - 1;
 			u.h = 1;
-			if(xw.win != NULL) 
-				SDL_FillRect(xw.win, &u, SDL_MapRGB(
-						xw.win->format,
-						(fg->r * 2 + bg->r) / 3,
-						(fg->g * 2 + bg->g) / 3,
-						(fg->b * 2 + bg-> b) / 3));
+			SDL_FillRect(xw.win, &u, SDL_MapRGB(
+					xw.win->format,
+					(fg->r * 2 + bg->r) / 3,
+					(fg->g * 2 + bg->g) / 3,
+					(fg->b * 2 + bg-> b) / 3));
 		}
-        int xs = r.x;
-				if(xw.win != NULL) 
-					draw_string(xw.win, s, xs, r.y, SDL_MapRGB(xw.win->format, fg->r, fg->g, fg->b));
-
-        /*while(*s) {
-            draw_char(xw.win, *s, xs, r.y, SDL_MapRGB(xw.win->format, fg->r, fg->g, fg->b));
-            xs += 6;
-            s++;
-        }*/
-
+		draw_string(xw.win, s, r.x, r.y, SDL_MapRGB(xw.win->format, fg->r, fg->g, fg->b));
 	}
 }
 
@@ -2610,8 +2602,8 @@ cresize(int width, int height)
 	if(height != 0)
 		xw.h = height;
 
-	col = (xw.w - 2*borderpx) / xw.cw;
-	row = (xw.h - 2*borderpx) / xw.ch;
+	col = (xw.w - 2*BORDERPX) / xw.cw;
+	row = (xw.h - 2*BORDERPX) / xw.ch;
 
     printf("set videomode %dx%d\n", xw.w, xw.h);
 #ifdef RS97_SCREEN_480
@@ -2812,7 +2804,7 @@ main(int argc, char *argv[]) {
 
 run:
     setlocale(LC_CTYPE, "");
-    tnew((initial_width - 2) / 4, (initial_height - 2) / 6);
+    tnew(initial_width / 4, initial_height / 6);
     ttynew();
     sdlinit(); /* Must have TTY before cresize */
     init_keyboard();

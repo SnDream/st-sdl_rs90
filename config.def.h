@@ -8,7 +8,8 @@
 //static char font[] = "fonts/TerminusTTF-4.46.0.ttf:fonts/TerminusTTF-4.46.0.ttf";
 static char font[] = "fonts/FIXED_V0.TTF:fonts/FIXED_V0.TTF";
 static int fontsize = 8;
-static int borderpx = 2;
+// static int borderpx = 0;
+#define BORDERPX 0 // Borderless
 #ifdef RS90
 static int initial_width = 240;
 static int initial_height = 160;
@@ -106,7 +107,7 @@ static Key key[] = {
 
 static Shortcut shortcuts[] = {
 	/* modifier		key		function	argument */
-	{ MODKEY|KMOD_SHIFT,	SDLK_PAGEUP,	xzoom,		{.i = +1} },
-	{ MODKEY|KMOD_SHIFT,	SDLK_PAGEDOWN,	xzoom,		{.i = -1} },
+	// { MODKEY|KMOD_SHIFT,	SDLK_PAGEUP,	xzoom,		{.i = +1} },
+	// { MODKEY|KMOD_SHIFT,	SDLK_PAGEDOWN,	xzoom,		{.i = -1} },
 };
 
