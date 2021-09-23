@@ -84,6 +84,7 @@ enum glyph_attribute {
 	ATTR_GFX       = 8,
 	ATTR_ITALIC    = 16,
 	ATTR_BLINK     = 32,
+	ATTR_CURSOR    = 64,
 };
 
 enum cursor_movement {
@@ -2101,6 +2102,7 @@ sdltermclear(int col1, int row1, int col2, int row2) {
 /*
  * Absolute coordinates.
  */
+__attribute__((unused))
 void
 xclear(int x1, int y1, int x2, int y2) {
 	if(xw.win == NULL) return;
@@ -2311,19 +2313,19 @@ xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 	if(base.mode & ATTR_REVERSE)
 		temp = fg, fg = bg, bg = temp;
 
-	/* Intelligent cleaning up of the borders. */
-	if(x == 0) {
-		xclear(0, (y == 0)? 0 : winy, BORDERPX,
-			winy + xw.ch + (y == term.row-1)? xw.h : 0);
-	}
-	if(x + charlen >= term.col-1) {
-		xclear(winx + width, (y == 0)? 0 : winy, xw.w,
-			(y == term.row-1)? xw.h : (winy + xw.ch));
-	}
-	if(y == 0)
-		xclear(winx, 0, winx + width, BORDERPX);
-	if(y == term.row-1)
-		xclear(winx, winy + xw.ch, winx + width, 4);
+	// /* Intelligent cleaning up of the borders. */
+	// if(x == 0) {
+	// 	xclear(0, (y == 0)? 0 : winy, BORDERPX,
+	// 		winy + xw.ch + (y == term.row-1)? xw.h : 0);
+	// }
+	// if(x + charlen >= term.col-1) {
+	// 	xclear(winx + width, (y == 0)? 0 : winy, xw.w,
+	// 		(y == term.row-1)? xw.h : (winy + xw.ch));
+	// }
+	// if(y == 0)
+	// 	xclear(winx, 0, winx + width, BORDERPX);
+	// if(y == term.row-1)
+	// 	xclear(winx, winy + xw.ch, winx + width, 4);
 
 	{
 		//SDL_Surface *text_surface;
@@ -2341,7 +2343,23 @@ xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 			SDL_BlitSurface(text_surface,NULL,xw.win,&r);
 			SDL_FreeSurface(text_surface);
 		}*/
-
+		if(base.mode & ATTR_CURSOR) {
+			Uint32 RGB = SDL_MapRGB(
+					xw.win->format,
+					(fg->r + bg->r * 2) / 3,
+					(fg->g + bg->g * 2) / 3,
+					(fg->b + bg->b * 2) / 3);
+			SDL_Rect u = r;
+			u.w = 1;
+			SDL_FillRect(xw.win, &u, RGB);
+			u.x += xw.cw - 1;
+			SDL_FillRect(xw.win, &u, RGB);
+			u = r;
+			u.h = 1;
+			SDL_FillRect(xw.win, &u, RGB);
+			u.y += xw.ch - 1;
+			SDL_FillRect(xw.win, &u, RGB);
+		}
 		if(base.mode & ATTR_UNDERLINE) {
 			SDL_Rect u = r;
 			//r.y += TTF_FontAscent(font) + 1;
@@ -2351,7 +2369,7 @@ xdraws(char *s, Glyph base, int x, int y, int charlen, int bytelen) {
 					xw.win->format,
 					(fg->r * 2 + bg->r) / 3,
 					(fg->g * 2 + bg->g) / 3,
-					(fg->b * 2 + bg-> b) / 3));
+					(fg->b * 2 + bg->b) / 3));
 		}
 		draw_string(xw.win, s, r.x, r.y, SDL_MapRGB(xw.win->format, fg->r, fg->g, fg->b));
 	}
@@ -2381,10 +2399,12 @@ xdrawcursor(void) {
 	/* draw the new one */
 	if(!(term.c.state & CURSOR_HIDE)) {
 		if(!(xw.state & WIN_FOCUSED))
-			g.bg = defaultucs;
+			g.bg = defaultucs, g.fg = defaultfg;
 
 		if(IS_SET(MODE_REVERSE))
-			g.mode |= ATTR_REVERSE, g.fg = defaultcs, g.bg = defaultfg;
+			g.mode |= ATTR_REVERSE, g.fg = defaultucs, g.bg = defaultfg;
+
+		g.mode |= ATTR_CURSOR;
 
 		sl = utf8size(g.c);
 		xdraws(g.c, g, term.c.x, term.c.y, 1, sl);
