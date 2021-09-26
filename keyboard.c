@@ -150,6 +150,7 @@ void init_keyboard() {
 
 	for (int j = 0, i; j < NUM_ROWS; j++) {
 		int x = (strlen(syms[0][j][0]) & 1) ? 2 : 0; /* col align */
+		if (j == 0) x -= 2; /* Fn line adjust */
 		for (i = 0; i < row_length[j]; i++) {
 			int length = strlen(syms[0][j][i]);
 			key_center[j][i] = x + 2 * length;
