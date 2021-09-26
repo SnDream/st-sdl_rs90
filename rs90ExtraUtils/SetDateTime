@@ -1,0 +1,136 @@
+#!/bin/sh
+
+ACTION=$1
+
+CONFIG_PATH="/media/data/local/home/.rs90ExtraUtils/"
+CONFIG_NAME="SetDateTime.conf"
+
+SDCARD_PATH="$(cat /proc/mounts | grep '^/dev/mmcblk0p1' | awk '{print $2}')"
+[ -n "${SDCARD_PATH}" ] && CONFIG_PATH="${SDCARD_PATH}/.rs90ExtraUtils/"
+
+CONFIG_FILE="${CONFIG_PATH}${CONFIG_NAME}"
+
+setdatetime_stat(){
+	echo "Config path   : ${CONFIG_FILE}"
+	if [ -f "${CONFIG_FILE}" ]
+	then echo "Time in config: $(cat "${CONFIG_FILE}")"
+	else echo "Time in config: Not Exist"
+	fi
+	echo "Time now      : $(date '+%Y.%m.%d-%T')"
+	return 0
+}
+
+setdatetime_save(){
+	{	echo "    Save config file."
+		mkdir -p "${CONFIG_PATH}" &&
+		date '+%Y.%m.%d-%T' > "${CONFIG_FILE}" &&
+		sync &&
+		echo "    Save config file success." &&
+		return 0
+	} || {
+		echo "    Save config file fail."
+		return 1
+	}
+}
+
+setdatetime_load(){
+	{	echo "    Read config file."
+		[ -e "${CONFIG_FILE}" ] &&
+		/usr/bin/sudo date -s "$(cat "${CONFIG_FILE}")" 2>/dev/null &&
+		echo "    Read config file success." &&
+		return 0
+	} || {
+		echo "    Read config file fail."
+		return 1
+	}
+}
+
+setdatetime_ui_system(){
+	local conf=/var/tmp/conf_setdatetime_system
+	local DATE_Y DATE_M DATE_D DATE_T DATE_STR
+	local ret=0
+
+	read DATE_Y DATE_M DATE_D <<-EOF
+		$(date '+%Y %m %d')
+	EOF
+	{   dialog \
+			             --begin 0  0 --keep-window --nocancel --rangebox "Year" 0 0 2000 2070 "${DATE_Y}" \
+			--and-widget --begin 3 10 --keep-window --nocancel --rangebox "Mon " 0 0    1   12 "${DATE_M}" \
+			--and-widget --begin 6 20 --keep-window --nocancel --rangebox "Day " 0 0    1   31 "${DATE_D}" \
+			--and-widget              --clear       --nocancel --timebox  "Time" 0 0   -1   -1 -1 || ret=1
+		echo 1>&2
+	} 2>"${conf}"
+	# clear
+	{   [ "${ret}" -eq 0 ] &&
+		read DATE_Y DATE_M DATE_D DATE_T < "${conf}" 2>/dev/null &&
+		[ -n "${DATE_Y}" ] && [ -n "${DATE_M}" ] && [ -n "${DATE_D}" ] && [ -n "${DATE_T}" ] &&
+		DATE_STR=$(printf '%04d.%02d.%02d-%s' "${DATE_Y}" "${DATE_M}" "${DATE_D}" "${DATE_T}") 2>/dev/null &&
+		/usr/bin/sudo date -s "${DATE_STR}" 2>/dev/null &&
+		rm -f "${conf}" &&
+		echo "    Set date and time success." &&
+		return 0
+	} || {
+		rm -f "${conf}"
+		echo "    Set date and time fail."
+		return 1
+	}
+}
+
+setdatetime_ui_st(){
+	local conf=/var/tmp/conf_setdatetime_st
+	local DATE_STR
+	local info1="Set Time & Date for RetroMini (C) 2021 SnDream\n[D-Pad]: Move/+/-   [A]/[R]: Confirm   [Start]: TAB"
+	local info2="Month names\n 1:January\n 2:February\n 3:March\n 4:April\n 5:May\n 6:June\n 7:July\n 8:August\n 9:September\n10:October\n11:November\n12:December"
+	local info3="$(date +'%T')\n${TZ:=UTC}"
+	local ret=0
+	if [ "$(date +'%Y')" -gt 1970 ]
+	then local dy=-1 dm=-1 dd=-1 th=-1 tm=-1 ts=-1
+	else local dy=2021 dm=10 dd=1 th=12 tm=0 ts=0
+	fi
+	
+	{   dialog --separate-widget '-' \
+			                --begin 21  0 --keep-window --infobox "${info1}"  4 58 \
+			--and-widget    --begin  0 38 --keep-window --infobox "${info2}" 15 20 \
+			--and-widget    --begin 16 38 --keep-window --infobox "${info3}"  4 20 \
+			--and-widget --date-format "%Y.%m.%d" \
+			                --begin  0  0 --keep-window --calendar "Date"     4 36 ${dd} ${dm} ${dy} \
+			--and-widget --time-format "%H:%M:%S" \
+			                --begin 10 38 --clear       --timebox  "Time"     0  0 ${th} ${tm} ${ts} || ret=1
+		echo 1>&2
+	} 2>"${conf}"
+	clear
+	{   [ "${ret}" -eq 0 ] &&
+		read DATE_STR < "${conf}" 2>/dev/null &&
+		[ -n "${DATE_STR}" ] &&
+		/usr/bin/sudo date -s "${DATE_STR}" 2>/dev/null &&
+		rm -f "${conf}" &&
+		echo "    Set date and time success." &&
+		sleep 1 &&
+		return 0
+	} || {
+		rm -f "${conf}"
+		echo "    Set date and time fail." &&
+		sleep 1 &&
+		return 1
+	}
+}
+
+setdatetime_default(){
+	local DATE_STR=2021.10.01-12:00:00
+	echo "    Set Default time."
+	/usr/bin/sudo date -s "${DATE_STR}" 2>/dev/null
+}
+
+case "${ACTION}" in
+stat) setdatetime_stat ;;
+load) setdatetime_load || setdatetime_default ;;
+save) setdatetime_save ;;
+boot) setdatetime_ui_st ;;
+ui_system) setdatetime_ui_system ;;
+ui_st) setdatetime_ui_st ;;
+*)
+	if [ ${TERM:0:2} = "st" ]
+	then setdatetime_ui_st
+	else setdatetime_ui_system
+	fi
+esac

@@ -1,0 +1,6 @@
+title=Set Time & Date
+description=Set Time & Date
+icon=skin:icons/datetime.png
+editable=false
+consoleapp=false
+exec=/usr/bin/opkrun

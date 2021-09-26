@@ -1,0 +1,8 @@
+#!/bin/sh
+
+case "$1" in
+status)       /media/data/local/home/.rs90ExtraUtils/SetDateTime stat ;;
+start|reload) /media/data/local/home/.rs90ExtraUtils/SetDateTime load ;;
+stop)         /media/data/local/home/.rs90ExtraUtils/SetDateTime save ;;
+*)            echo "Usage: $(basename $0) [start|stop|status]" ;;
+esac
