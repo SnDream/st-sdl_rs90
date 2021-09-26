@@ -12,8 +12,8 @@ main() {
 	until main_menu
 	do
 		case "$?" in
-		1) install_setdatetime ;;
-		2) remove_setdatetime ;;
+		1) install_swclock ;;
+		2) remove_swclock ;;
 		3) install_chinese ;;
 		4) remove_chinese ;;
 		5) set_timezone ;;
@@ -26,8 +26,8 @@ main() {
 main_menu() {
 	local menusel
 	dialog --menu rs90ExtraUtils 0 0 0 \
-		1 "Install SetDateTime" \
-		2 "Remove SetDateTime" \
+		1 "Install Software Clock" \
+		2 "Remove Software Clock" \
 		3 "Install Chinese Language File" \
 		4 "Remove Chinese Language File" \
 		5 "Set Timezone to UTC+8" \
@@ -39,57 +39,57 @@ main_menu() {
 	return 0
 }
 
-install_setdatetime() {
+install_swclock() {
 	local init_path=/media/data/local/etc/init.d
 
 	{   mkdir -p "${RS90EU_INS_PATH}" ~/".gmenu2x/sections/settings" &&
-		echo "params=-m settimedate.hide.desktop \"${OPK_PATH}\"" | cat "${RS90EU_PATH}/SetDateTime.gmenu2x" - \
-				> ~/".gmenu2x/sections/settings/05_SetDateTime" &&
-		dialog --msgbox "Install SetDateTime Success! \n" 0 0
+		echo "params=-m swclock.hide.desktop \"${OPK_PATH}\"" | cat "${RS90EU_PATH}/swclock.gmenu2x" - \
+				> ~/".gmenu2x/sections/settings/05_swclock" &&
+		dialog --msgbox "Install Software Clock Success! \n" 0 0
 	} || {
-		dialog --msgbox "Install SetDateTime Fail! \n" 0 0
+		dialog --msgbox "Install Software Clock Fail! \n" 0 0
 	}
-	dialog --yesno "Load/Save Time on Power On/OFF? \n" 0 0 && {
+	dialog --yesno "Auto Load/Save Time on Power On/OFF? \n" 0 0 && {
 		{   mkdir -p "${RS90EU_INS_PATH}" "${init_path}" &&
-			cp "${RS90EU_PATH}/SetDateTime" "${RS90EU_INS_PATH}/SetDateTime" &&
-			cp -f "${RS90EU_PATH}/SetDateTime.init" "${init_path}/S05SetDateTime.sh" &&
-			dialog --msgbox "Set Power Config Success! \n" 0 0
+			cp "${RS90EU_PATH}/swclock" "${RS90EU_INS_PATH}/swclock" &&
+			cp -f "${RS90EU_PATH}/swclock.init" "${init_path}/S05swclock.sh" &&
+			dialog --msgbox "Set Auto Load/Save Success! \n" 0 0
 		} || {
-			dialog --msgbox "Set Power Config Fail! \n" 0 0
+			dialog --msgbox "Set Auto Load/Save Fail! \n" 0 0
 		}
 	}
-	dialog --yesno "Run SetDateTime on Boot? \n" 0 0 && {
-		{   echo -ne "#!/bin/sh\nOPK_FILE=${OPK_PATH}\n" | cat - "${RS90EU_PATH}/SetDateTime.autostart" \
+	dialog --yesno "Run Software Clock on Boot? \n" 0 0 && {
+		{   echo -ne "#!/bin/sh\nOPK_FILE=${OPK_PATH}\n" | cat - "${RS90EU_PATH}/swclock.autostart" \
 					> ~/".autostart" &&
 			chmod +x ~/".autostart" &&
-			dialog --msgbox "Install SetDateTime on Boot Success! \n" 0 0
+			dialog --msgbox "Install Software Clock on Boot Success! \n" 0 0
 		} || {
-			dialog --msgbox "Install SetDateTime on Boot Fail! \n" 0 0
+			dialog --msgbox "Install Software Clock on Boot Fail! \n" 0 0
 		}
 	}
 
 }
 
-remove_setdatetime_configs() {
+remove_swclock_configs() {
 	local SDCARD_PATH="$(cat /proc/mounts | grep '^/dev/mmcblk0p1' | awk '{print $2}')"
-	local NAND_CONF="${RS90EU_INS_PATH}/Configs/SetDateTime.conf"
-	local SDCARD_CONF="${SDCARD_PATH}/.rs90ExtraUtils/SetDateTime.conf"
+	local NAND_CONF="${RS90EU_INS_PATH}/Configs/swclock.conf"
+	local SDCARD_CONF="${SDCARD_PATH}/.rs90ExtraUtils/swclock.conf"
 	local ret=0
 	[ ! -e "${NAND_CONF}"   ] || rm -rf "${NAND_CONF}"   || ret=1
 	[ ! -e "${SDCARD_CONF}" ] || rm -rf "${SDCARD_CONF}" || ret=1
 	return ${ret}
 }
 
-remove_setdatetime() {
+remove_swclock() {
 	local init_path=/media/data/local/etc/init.d
-	{   rm -f ~/".gmenu2x/sections/settings/05_SetDateTime" &&
-		rm -f "${RS90EU_INS_PATH}/SetDateTime" &&
-		rm -f "${init_path}/S05SetDateTime.sh" &&
+	{   rm -f ~/".gmenu2x/sections/settings/05_swclock" &&
+		rm -f "${RS90EU_INS_PATH}/swclock" &&
+		rm -f "${init_path}/S05swclock.sh" &&
 		rm -r ~/".autostart" &&
-		remove_setdatetime_configs &&
-		dialog --msgbox "Remove SetDateTime Success! \n" 0 0
+		remove_swclock_configs &&
+		dialog --msgbox "Remove Software Clock Success! \n" 0 0
 	} || {
-		dialog --msgbox "Remove SetDateTime Fail! \n" 0 0
+		dialog --msgbox "Remove Software Clock Fail! \n" 0 0
 	}
 }
 

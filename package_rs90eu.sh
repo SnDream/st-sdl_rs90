@@ -33,14 +33,14 @@ X-OD-NeedsDownscaling=false' > opk/rs90eu.rs90.desktop
 
 echo '[Desktop Entry]
 Type=Application
-Name=Set Time & Date
+Name=Software Clock
 Comment=Set Time & Date
-Exec=st.dge -e /opk/rs90ExtraUtils/SetDateTime
+Exec=st.dge -e /opk/rs90ExtraUtils/swclock
 Icon=st
 Terminal=false
 Type=Application
 Categories=settings;
-X-OD-NeedsDownscaling=false' > opk/settimedate.hide.desktop
+X-OD-NeedsDownscaling=false' > opk/swclock.hide.desktop
 
 mksquashfs ./opk st_rs90eu.opk -all-root -noappend -no-exports -no-xattrs
 
