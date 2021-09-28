@@ -14,33 +14,49 @@ main() {
 		case "$?" in
 		1) install_swclock ;;
 		2) remove_swclock ;;
-		3) install_chinese ;;
-		4) remove_chinese ;;
-		5) set_timezone ;;
-		6) default_timezone ;;
-		7) return 0 ;;
+		3) set_timezone ;;
+		4) install_chinese ;;
+		5) remove_chinese ;;
+		6) return 0 ;;
 		esac
 	done
 }
 
 main_menu() {
+	local info1="rs90ExtraUtils for RetroMini (C) 2021 SnDream\n[D-Pad]: Move/+/-   [A]/[R]: Confirm   [Start]: TAB"
 	local menusel
-	dialog --menu rs90ExtraUtils 0 0 0 \
+	dialog --begin 21  0 --keep-window --infobox "${info1}"  4 58 \
+		--and-widget --menu "Select a item:" 0 0 0 \
 		1 "Install Software Clock" \
 		2 "Remove Software Clock" \
-		3 "Install Chinese Language File" \
-		4 "Remove Chinese Language File" \
-		5 "Set Timezone to UTC+8" \
-		6 "Default Timezone (UTC)" \
-		7 "Exit" 2>/var/tmp/rs90eu_sel
+		3 "Set/Reset Timezone" \
+		4 "Install Chinese Language File" \
+		5 "Remove Chinese Language File" \
+		6 "Exit" 2>/var/tmp/rs90eu_sel
 	menusel=$(cat /var/tmp/rs90eu_sel)
 	rm -f /var/tmp/rs90eu_sel
-	[ -n "menusel" ] && return ${menusel}
+	[ -n "${menusel}" ] && return ${menusel}
 	return 0
+}
+
+advanced_user_check() {
+	[ -e ~/".gmenu2x/sections/settings/05_swclock" ] && return 0
+	[ ! -e ~/".autostart" ] && [ ! -e ~/".profile" ] && return 0
+	dialog --defaultno --yesno \
+'WARNING! WARNING!! WARNING!!!
+There are several files that may be created by you:
+	~/.profile
+	~/.autostart
+Installing Software Clock will OVERWRITE these files.
+Please backup your files before installing!!!
+
+	Continue?' 0 0
 }
 
 install_swclock() {
 	local init_path=/media/data/local/etc/init.d
+
+	advanced_user_check || return
 
 	{   mkdir -p "${RS90EU_INS_PATH}" ~/".gmenu2x/sections/settings" &&
 		echo "params=-m swclock.hide.desktop \"${OPK_PATH}\"" | cat "${RS90EU_PATH}/swclock.gmenu2x" - \
@@ -67,7 +83,7 @@ install_swclock() {
 			dialog --msgbox "Install Software Clock on Boot Fail! \n" 0 0
 		}
 	}
-
+	dialog --yesno "Set Timezone now? \n" 0 0 && set_timezone
 }
 
 remove_swclock_configs() {
@@ -82,10 +98,14 @@ remove_swclock_configs() {
 
 remove_swclock() {
 	local init_path=/media/data/local/etc/init.d
+
+	advanced_user_check || return
+
 	{   rm -f ~/".gmenu2x/sections/settings/05_swclock" &&
 		rm -f "${RS90EU_INS_PATH}/swclock" &&
 		rm -f "${init_path}/S05swclock.sh" &&
-		rm -r ~/".autostart" &&
+		rm -f ~/".autostart" &&
+		rm -f ~/".profile" &&
 		remove_swclock_configs &&
 		dialog --msgbox "Remove Software Clock Success! \n" 0 0
 	} || {
@@ -93,10 +113,69 @@ remove_swclock() {
 	}
 }
 
+set_timezone() {
+	local area1= area2=
+
+	grep -q .profile ~/.autostart || {
+		dialog --msgbox "Please install Software Clock first! \n" 0 0
+		return 0
+	}
+
+	until [ -n "${area2}" ]
+	do
+		dialog --menu "Select Area:" 0 0 0 \
+			Etc     "(Common)" \
+			Africa  "" \
+			America "" \
+			Asia    "" \
+			Europe  "" \
+			Pacific "" \
+			UTC     "(Default)" 2>/var/tmp/tz_sel
+		area1=$(cat /var/tmp/tz_sel)
+		rm -f /var/tmp/tz_sel
+		[ -n "${area1}" ] || {
+			dialog --msgbox "Set Timezone is cancelled.\n" 0 0
+			return 0
+		}
+		[ "${area1}" = "UTC" ] && {
+			reset_timezone
+			return
+		}
+
+		cd /usr/share/zoneinfo/posix/${area1}
+		find * -type f | awk '{print $s " \"\""}' > /var/tmp/tz_area
+		cd - >/dev/null 2>/dev/null
+
+		eval dialog --menu \"Select Area:\" 0 0 0 $(cat /var/tmp/tz_area) 2>/var/tmp/tz_sel
+		area2=$(cat /var/tmp/tz_sel)
+		rm -f /var/tmp/tz_sel /var/tmp/tz_area
+	done
+
+	{   export TZ=${area1}/${area2} &&
+		echo "export TZ=${area1}/${area2}" > ~/.profile &&
+		chmod +x ~/.profile &&
+		dialog --msgbox "Set Timezone to ${area1}/${area2} Success! \nTime now: $(date)" 0 0
+	} || {
+		dialog --msgbox "Set Timezone Fail! \n" 0 0
+	}
+}
+
+reset_timezone() {
+	{   export -n TZ &&
+		rm -f ~/.profile &&
+		dialog --msgbox "Reset Timezone to UTC Success! \nTime now: $(date)" 0 0
+	} || {
+		dialog --msgbox "Reset Timezone to UTC Fail! \n" 0 0
+	}
+}
+
 install_chinese() {
 	{   mkdir -p ~/".gmenu2x/translations" &&
 		cp "${RS90EU_PATH}/Chinese.lang" ~/".gmenu2x/translations/Chinese" &&
-		dialog --msgbox "Install Chinese Language File Success! \n" 0 0
+		grep -v '^lang=' ~/".gmenu2x/gmenu2x.conf" > /var/tmp/gmenu2x.conf &&
+		echo 'lang="Chinese"' >> /var/tmp/gmenu2x.conf &&
+		mv /var/tmp/gmenu2x.conf ~/".gmenu2x/gmenu2x.conf" &&
+		dialog --msgbox "Install Chinese Language File Success! \nManual Enable: \nSettings > Gmenu2X > Language > Chinese" 0 0
 	} || {
 		dialog --msgbox "Install Chinese Language File Fail! \n" 0 0
 	}
@@ -108,23 +187,6 @@ remove_chinese() {
 		dialog --msgbox "Remove Chinese Language File Success! \n" 0 0
 	} || {
 		dialog --msgbox "Remove Chinese Language File Fail! \n" 0 0
-	}
-}
-
-set_timezone() {
-	{   echo "export TZ=Asia/Shanghai" > ~/.profile &&
-		chmod +x ~/.profile &&
-		dialog --msgbox "Set Timezone Success! \n" 0 0
-	} || {
-		dialog --msgbox "Set Timezone Fail! \n" 0 0
-	}
-}
-
-default_timezone() {
-	{   rm -f ~/.profile &&
-		dialog --msgbox "Set Default Timezone Success! \n" 0 0
-	} || {
-		dialog --msgbox "Set Default Timezone Fail! \n" 0 0
 	}
 }
 
