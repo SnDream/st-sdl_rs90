@@ -50,7 +50,10 @@ There are several files that may be created by you:
 Installing Software Clock will OVERWRITE these files.
 Please backup your files before installing!!!
 
-	Continue?' 0 0
+	Continue?' 0 0 || return
+	[ -e ~/".autostart" ] && cp ~/".autostart" ~/".autostart.bak"
+	[ -e ~/".profile" ] && cp ~/".profile" ~/".profile.bak"
+	return 0
 }
 
 install_swclock() {
