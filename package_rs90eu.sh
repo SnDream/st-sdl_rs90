@@ -10,7 +10,7 @@ cp libst-preload.so opk/libst-preload.so
 
 echo '[Desktop Entry]
 Type=Application
-Name=SDL Term
+Name=STerminal+
 Comment=Simple terminal
 X-OD-Manual=manual.txt
 Exec=st.dge

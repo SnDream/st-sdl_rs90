@@ -1,6 +1,6 @@
 SDL Terminal by Benob, based on st-sdl
-RS90 Version (Origin) by retardTonic
-RS90 Version (SmallFont) by SnDream
+RS90 Port (Origin) by retardTonic
+RS90 Port (STerminal+) by SnDream
 
 == How to use ==
 D-Pad Up / Down / Left / Right
@@ -18,7 +18,7 @@ Start Button
 L + R Button
     Press CTRL+C
 L + Start Button
-    Exit SDL Term
+    Exit STerminal+
 
 == Keyboard ==
 D-Pad Up / Down / Left / Right
@@ -40,7 +40,7 @@ Start Button
 L + R Button
     Press CTRL+C
 L + Start Button
-    Exit SDL Term
+    Exit STerminal
 Select + D-Pad Up / Down
     Switch Keyboard Location
 
