@@ -91,7 +91,7 @@ install_swclock() {
 
 remove_swclock_configs() {
 	local SDCARD_PATH="$(cat /proc/mounts | grep '^/dev/mmcblk0p1' | awk '{print $2}')"
-	local NAND_CONF="${RS90EU_INS_PATH}/Configs/swclock.conf"
+	local NAND_CONF="${RS90EU_INS_PATH}/swclock.conf"
 	local SDCARD_CONF="${SDCARD_PATH}/.rs90ExtraUtils/swclock.conf"
 	local ret=0
 	[ ! -e "${NAND_CONF}"   ] || rm -rf "${NAND_CONF}"   || ret=1
