@@ -87,6 +87,7 @@ install_swclock() {
 		}
 	}
 	dialog --yesno "Set Timezone now? \n" 0 0 && set_timezone
+	sync
 }
 
 remove_swclock_configs() {
@@ -117,7 +118,7 @@ remove_swclock() {
 }
 
 set_timezone() {
-	local area1= area2=
+	local area1= area2= area2_raw=
 
 	grep -q .profile ~/.autostart || {
 		dialog --msgbox "Please install Software Clock first! \n" 0 0
@@ -150,14 +151,20 @@ set_timezone() {
 		cd - >/dev/null 2>/dev/null
 
 		eval dialog --menu \"Select Area:\" 0 0 0 $(cat /var/tmp/tz_area) 2>/var/tmp/tz_sel
-		area2=$(cat /var/tmp/tz_sel)
+		area2_raw=$(cat /var/tmp/tz_sel)
+		# The POSIX time zone display is the opposite of what it means, unbelievable!
+		if [ "${area1}" = "Etc" ]
+		then area2=$(echo -n "${area2_raw}" | tr '+-' '-+')
+		else area2="${area2_raw}"
+		fi
 		rm -f /var/tmp/tz_sel /var/tmp/tz_area
 	done
 
 	{   export TZ=${area1}/${area2} &&
 		echo "export TZ=${area1}/${area2}" > ~/.profile &&
 		chmod +x ~/.profile &&
-		dialog --msgbox "Set Timezone to ${area1}/${area2} Success! \nTime now: $(date)" 0 0
+		sync &&
+		dialog --msgbox "Set Timezone to ${area1}/${area2_raw} Success! \nTime now: $(date)" 0 0
 	} || {
 		dialog --msgbox "Set Timezone Fail! \n" 0 0
 	}
@@ -178,6 +185,7 @@ install_chinese() {
 		grep -v '^lang=' ~/".gmenu2x/gmenu2x.conf" > /var/tmp/gmenu2x.conf &&
 		echo 'lang="Chinese"' >> /var/tmp/gmenu2x.conf &&
 		mv /var/tmp/gmenu2x.conf ~/".gmenu2x/gmenu2x.conf" &&
+		sync &&
 		dialog --msgbox "Install Chinese Language File Success! \nManual Enable: \nSettings > Gmenu2X > Language > Chinese" 0 0
 	} || {
 		dialog --msgbox "Install Chinese Language File Fail! \n" 0 0

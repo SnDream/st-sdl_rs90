@@ -81,13 +81,19 @@ swclock_ui_st(){
 	local DATE_STR
 	local info1="Software Clock for RetroMini (C) 2021 SnDream\n[D-Pad]: Move/+/-   [A]/[R]: Confirm   [Start]: TAB"
 	local info2="Month names\n 1:January\n 2:February\n 3:March\n 4:April\n 5:May\n 6:June\n 7:July\n 8:August\n 9:September\n10:October\n11:November\n12:December"
-	local info3="$(date +'%T')\n${TZ:=UTC}"
+	local info3=
 	local ret=0
 	if [ "$(date +'%Y')" -gt 1970 ]
 	then local dy=-1 dm=-1 dd=-1 th=-1 tm=-1 ts=-1
 	else local dy=2021 dm=10 dd=1 th=12 tm=0 ts=0
 	fi
-	
+
+	# The POSIX time zone display is the opposite of what it means, unbelievable!
+	if [ "${TZ:0:4}" = 'Etc/' ]
+	then info3="$(date +'%T')\n$(echo -n ${TZ} | tr '+-' '-+')"
+	else info3="$(date +'%T')\n${TZ:=UTC}"
+	fi
+
 	{   dialog --separate-widget '-' \
 			                --begin 21  0 --keep-window --infobox "${info1}"  4 58 \
 			--and-widget    --begin  0 38 --keep-window --infobox "${info2}" 15 20 \
