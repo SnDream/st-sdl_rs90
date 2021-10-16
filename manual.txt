@@ -62,7 +62,7 @@ mv <f> <d>
     move files (dest can be dir)
 rm <f>
     remove files (use -rf for dir)
-top
+htop
     see running processes (q to quit)
 less <f>
     see content of text file
