@@ -24,6 +24,7 @@ echo '[Desktop Entry]
 Type=Application
 Name=rs90ExtraUtils
 Comment=Misc Scripts for rs90
+X-OD-Manual=rs90ExtraUtils/manual.txt
 Exec=st.dge -e /opk/rs90ExtraUtils/rs90eu
 Icon=st
 Terminal=false

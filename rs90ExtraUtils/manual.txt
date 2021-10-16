@@ -1,0 +1,88 @@
+rs90ExtraUtils by SnDream
+
+For Chinese Users:
+中文说明在底部，请翻到下面查阅。
+
+
+== Manual (English) ==
+
+-- Install Software Clock --
+Warning:
+If the software clock is installed and the device filesystem is wrong, the boot script may not work, causing the Gmenu2X to be inaccessible.
+If this happens, please connect the device to the PC via USB.
+
+For Mass Storage
+  open "OpenDingux Device/Home" on the PC
+  delete the ".autostart" file.
+For Ethernet
+  ssh login, execute
+  rm ~/.autostart
+
+Add software clock support for RS-90, which can be worked for the RTC of the emulator.
+1. Automatically install the new icon for the software clock.
+2. Ask "Auto Load/Save Time on Power On/Off?" and select as desired.
+3. Ask "Run Software Clock on Boot?" and select as desired.
+4. Ask "Set Timezone now?" and select as desired. If you select Yes, then set the timezone further.
+
+-- Remove Software Clock --
+Removes the software clock, including boot scripts, the icon, and configs.
+
+-- Set/Reset Timezone --
+You need to install the software clock and turn on "Run Software Clock on Boot" during installation.
+This is used for timezone modification.
+
+
+== 说明 (中文) ==
+
+-- Install Software Clock --
+（安装软件时钟）
+警告：
+安装软件时钟，
+如果设备出现文件损坏的情况，
+开机的脚本可能无法正常工作，
+造成 Gmenu2X 菜单无法进入。
+
+如果出现这种情况，请将设备通过
+USB连接到PC。
+
+对于 Mass Storage
+  在PC上打开
+  "OpenDingux Device/Home"，然后
+  删除 ".autostart" 文件
+对于 Ethernet
+  ssh登录，执行
+  rm ~/.autostart
+
+对RS-90增加软件时钟支持，
+可以用于模拟器的实时时钟。
+1. 自动安装软件时钟的新图标。
+2. 询问
+"Auto Load/Save Time on Power On/OFF?"
+（是否在开关机时自动存取时间），根据需要选择。
+3. 询问
+"Run Software Clock on Boot?"
+（是否在开机时运行软件时钟），根据需要选择。
+4. 询问
+"Set Timezone now?"
+（是否需要设置时区），根据需要选择。
+如果选择Yes，则进一步设置时区。
+
+-- Remove Software Clock --
+（移除软件时钟）
+删除软件时钟，包括启动脚本、软件以及配置。
+
+-- Set/Reset Timezone --
+（设置/重置时区）
+需要安装软件时钟，并在安装时
+打开"Run Software Clock on Boot"。
+用于时区的修改。
+
+-- Install Chinese Language File --
+（安装中文语言文件）
+仅限部分 Gmenu2X 菜单中的部分文本，
+不支持模拟器内文本。
+安装后会自动设置为中文。
+
+-- Remove Chinese Language File --
+（移除中文语言文件）
+移除已经安装的中文语言文件，变回英文。
