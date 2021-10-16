@@ -9,5 +9,5 @@ source ~/.profile 2>/dev/null
 	fi
 	touch /var/tmp/.swclock_ok
 }
-
+[ -x ~/".rs90ExtraUtils/gmenu2x" ] && exec ~/".rs90ExtraUtils/gmenu2x"
 exec /usr/bin/gmenu2x
